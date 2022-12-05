@@ -87,6 +87,15 @@ public class EN_updateRubriquesBudget extends BaseDocumentExtension {
                         if(taskInstance!=null){
                             Collection<IOperator> iOperators = (Collection<IOperator>) taskInstance.getOperators();
                             if(iOperators!=null && !iOperators.isEmpty()){
+                                IStorageResource rb = (IStorageResource) iLinkedResource.getValue("RubriqueBudgetaire");
+                                if(rb!=null){
+                                    parentInstance.setValue("RubriqueBudgetaire" , this.RubriqueBudgetaire);
+                                    parentInstance.setValue("CodeRubrique" , rb.getValue("CodeRubrique"));
+                                    parentInstance.setValue("Annee" , this.anneeBudgetaire);
+                                    parentInstance.setValue("ArticleBudget" , rb.getValue("ArticleBudget")!=null ? ((IStorageResource)rb.getValue("ArticleBudget")).getValue("sys_Title") : null);
+                                    parentInstance.setValue("Paragraphe" , rb.getValue("Paragraphe")!=null ? ((IStorageResource)rb.getValue("Paragraphe")).getValue("sys_Title") : null);
+                                    parentInstance.save(getWorkflowModule().getContext(iOperators.iterator().next()));
+                                }
                                 WorkflowsService.executeAction(parentInstance , getWorkflowModule().getContext(iOperators.iterator().next()) , "Valider" , "Engagement validé");
                             }
                         }

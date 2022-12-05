@@ -55,6 +55,55 @@ public class GenerateWordFile extends BaseDocumentExtension {
         return getInputStream(doc);
     }
 
+    public InputStream valorization(IWorkflowModule workflowModule, IResource iResource, IAttachment iAttachment , boolean includeHeader) throws Exception {
+        License license = new License();
+
+        String licensePath = workflowModule.getConfiguration().getStringProperty("com.vdoc.connector.aspose.licence.path");
+
+        if (StringUtils.isNotEmpty(licensePath)) {
+            license.setLicense(Turbine.getRealPath(licensePath));
+        }
+        Document doc = new Document(iAttachment.getInputStream());
+        DocumentBuilder builder = new DocumentBuilder(doc);
+        bookmarkValorization(doc, builder, workflowModule, iResource , includeHeader);
+
+        return getInputStream(doc);
+    }
+
+    private void bookmarkValorization(Document doc, DocumentBuilder builder, IWorkflowModule workflowModule, IResource iResource , boolean includeHeader) throws Exception {
+        Map<String, Collection<Bookmark>> bookmarkHeadersMap = new HashMap<>();
+
+        BookmarkCollection bookmarkCollection = doc.getRange().getBookmarks();
+        Iterator<Bookmark> bookmarkIterator = bookmarkCollection.iterator();
+
+        while (bookmarkIterator.hasNext()) {
+
+            Bookmark bookmark = bookmarkIterator.next();
+            bookmark.setText("");
+
+            if (bookmark.getName().contains("__")) {
+
+                String tabSysName = bookmark.getName().split("__")[0];
+                Collection<Bookmark> bookmarkHeaders = bookmarkHeadersMap.get(tabSysName);
+                if (bookmarkHeaders == null) {
+                    bookmarkHeaders = new ArrayList<>();
+                }
+
+                bookmarkHeaders.add(bookmark);
+                bookmarkHeadersMap.put(tabSysName, bookmarkHeaders);
+                continue;
+            }
+
+            Object resourceValue = iResource.getValue(bookmark.getName());
+
+            if (resourceValue != null) {
+                VDocValuesHelperForBookmarks.setType(resourceValue, bookmark, builder, workflowModule);
+            }
+        }
+
+        buildTableRows(bookmarkHeadersMap, doc, builder, workflowModule, iResource , includeHeader);
+    }
+
     private void bookmarkValorization(Document doc, DocumentBuilder builder, IWorkflowModule workflowModule, IResource iResource) throws Exception {
         Map<String, Collection<Bookmark>> bookmarkHeadersMap = new HashMap<>();
 
@@ -92,7 +141,6 @@ public class GenerateWordFile extends BaseDocumentExtension {
     public static InputStream getInputStream(Document document) throws Exception {
         ByteArrayOutputStream bos = null;
         ByteArrayInputStream bis = null;
-
         try {
             int saveFormat = document.getOriginalLoadFormat();
             bos = new ByteArrayOutputStream();
@@ -130,11 +178,68 @@ public class GenerateWordFile extends BaseDocumentExtension {
                         for (Bookmark bookmarkTableCellHeader : bookmarkHeaders) {
 
                             Cell cellHeader = (Cell) bookmarkTableCellHeader.getBookmarkStart().getAncestor(7);
-
                             String propertyName = bookmarkTableCellHeader.getName().split("__")[1];
                             Object resourceValue = resource.getValue(propertyName);
 
                             String label = resource.getDefinition().getProperty(propertyName).getLabel();
+                            bookmarkTableCellHeader.setText(label);
+
+                            Cell cell = new Cell((DocumentBase) doc);
+
+                            cell.getCellFormat().setWidth(cellHeader.getCellFormat().getWidth());
+                            newRow.appendChild((Node) cell);
+                            cell.appendChild((Node) new Paragraph((DocumentBase) doc));
+
+                            cell.getFirstParagraph().appendChild((Node) new BookmarkStart((DocumentBase) doc, "bookmark_temp"));
+                            cell.getFirstParagraph().appendChild((Node) new Run((DocumentBase) doc, "bookmark_temp"));
+                            cell.getFirstParagraph().appendChild((Node) new BookmarkEnd((DocumentBase) doc, "bookmark_temp"));
+
+                            if (resourceValue instanceof Number) {
+
+                                cell.getFirstParagraph().getParagraphFormat().setAlignment(2);
+                            } else {
+
+                                cell.getFirstParagraph().getParagraphFormat().setAlignment(0);
+                            }
+
+                            Bookmark bookmarkTemp = doc.getRange().getBookmarks().get("bookmark_temp");
+                            VDocValuesHelperForBookmarks.setType(resourceValue, bookmarkTemp, builder, workflowModule);
+                            bookmarkTemp.remove();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void buildTableRows(Map<String, Collection<Bookmark>> bookmarkHeadersMap, Document doc, DocumentBuilder builder, IWorkflowModule workflowModule, IResource iResource , boolean includeHeader) throws Exception {
+        for (Map.Entry<String, Collection<Bookmark>> entry : bookmarkHeadersMap.entrySet()) {
+            Table table = null;
+
+            Collection<Bookmark> bookmarkHeaders = entry.getValue();
+
+            Cell parentCell = (Cell) ((Bookmark) bookmarkHeaders.iterator().next()).getBookmarkStart().getAncestor(7);
+            if (parentCell != null) {
+
+                table = parentCell.getParentRow().getParentTable();
+
+                Collection<IResource> resources = (Collection<IResource>) iResource.getValue(entry.getKey());
+
+                if (resources != null) {
+
+                    for (IResource resource : resources) {
+
+                        Row newRow = new Row((DocumentBase) doc);
+                        newRow.getRowFormat().setAllowBreakAcrossPages(true);
+                        table.appendChild((Node) newRow);
+
+                        for (Bookmark bookmarkTableCellHeader : bookmarkHeaders) {
+
+                            Cell cellHeader = (Cell) bookmarkTableCellHeader.getBookmarkStart().getAncestor(7);
+                            String propertyName = bookmarkTableCellHeader.getName().split("__")[1];
+                            Object resourceValue = resource.getValue(propertyName);
+
+                            String label = resource.getDefinition().getProperty(propertyName).getDescription();
                             bookmarkTableCellHeader.setText(label);
 
                             Cell cell = new Cell((DocumentBase) doc);

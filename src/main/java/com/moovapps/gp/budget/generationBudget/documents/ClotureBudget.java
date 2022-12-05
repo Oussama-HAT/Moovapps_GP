@@ -24,6 +24,7 @@ public class ClotureBudget extends BaseDocumentExtension {
     private double disponible = 0.0D;
     private double montantEngager = 0.0D;
     private double montantPaye = 0.0D;
+
     public boolean onBeforeSubmit(IAction action) {
         try {
             this.loggedOnContext = getWorkflowModule().getLoggedOnUserContext();
@@ -71,8 +72,6 @@ public class ClotureBudget extends BaseDocumentExtension {
                                     RAPInstance.setValue("MontantAPayer", 0);
                                     RAPInstance.setValue("ResteAPayer", this.resteApayerEngagement);
                                     RAPInstance.save(this.loggedOnContext);
-                                    //RAPInstance.setValue("sys_Reference" , "RAP-"+String.valueOf(annee)+getWorkflowInstance().getValue("sys_Reference_chrono"));
-                                    //RAPInstance.save("sys_Reference");
                                     engagementworkflowInstance.addLinkedWorkflowInstance("FicheRAP", RAPInstance);
                                     engagementworkflowInstance.save(this.sysAdminContext);
                                     WorkflowsService.executeAction(engagementworkflowInstance , this.loggedOnContext , "RAP" , "AUTO");
@@ -94,6 +93,7 @@ public class ClotureBudget extends BaseDocumentExtension {
                                 this.resteApayerRAP = ((Number) iWorkflowInstance.getValue("ResteAPayer")).doubleValue();
                                 this.montantEngager = ((Number) iWorkflowInstance.getValue("MontantAImputer")).doubleValue();
                                 this.montantPaye = ((Number) iWorkflowInstance.getValue("MontantAPayer")).doubleValue();
+                                double cumulePaiementN1 = ((Number)iWorkflowInstance.getValue("CumulDesPaiementsN1")).doubleValue();
                                 IWorkflowInstance RAPInstance = getWorkflowModule().createWorkflowInstance(this.loggedOnContext, iWorkflow, "");
                                 int annee = Integer.parseInt((String) iWorkflowInstance.getValue("AnneeBudgetaireDestination")) + 1;
                                 RAPInstance.setValue("ReferenceEngagement", iWorkflowInstance.getValue("ReferenceEngagement"));
@@ -107,7 +107,7 @@ public class ClotureBudget extends BaseDocumentExtension {
                                 RAPInstance.setValue("RubriqueBudgetaire", iWorkflowInstance.getValue("RubriqueBudgetaire"));
                                 RAPInstance.setValue("Disponible", this.disponible);
                                 RAPInstance.setValue("MontantAImputer", this.montantEngager);
-                                RAPInstance.setValue("CumulDesPaiementsN1", this.montantPaye);
+                                RAPInstance.setValue("CumulDesPaiementsN1", cumulePaiementN1 + this.montantPaye);
                                 RAPInstance.setValue("ResteAPayerN1", this.resteApayerRAP);
                                 RAPInstance.setValue("MontantAPayer", 0);
                                 RAPInstance.setValue("ResteAPayer", this.resteApayerRAP);
