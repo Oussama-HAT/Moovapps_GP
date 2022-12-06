@@ -53,7 +53,7 @@ public class PreparationBudget extends BaseDocumentExtension {
                 Collection<ILinkedResource> rbLinkedResources = (Collection<ILinkedResource> ) getWorkflowInstance().getLinkedResources(Const.Properties.PB_Budget_Tab.toString());
                 if(rbLinkedResources!=null && !rbLinkedResources.isEmpty()){
                     for(ILinkedResource iLinkedResource : rbLinkedResources){
-                        if(iLinkedResource.getValue("MontantDuBudgetCP")==null || (!natureBudget.getValue("sys_Title").equals("Fonctionnement") && iLinkedResource.getValue("MontantDuBudgetCE")==null)){
+                        if(iLinkedResource.getValue("MontantDuBudgetCP")==null || (!natureBudget.getValue("sys_Reference").equals("0002") && iLinkedResource.getValue("MontantDuBudgetCE")==null)){
                             getResourceController().alert("Action impossible: Le montant du budget CP / CE est obligatoire !");
                             return false;
                         }

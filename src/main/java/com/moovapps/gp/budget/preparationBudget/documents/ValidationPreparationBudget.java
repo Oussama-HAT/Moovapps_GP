@@ -56,7 +56,7 @@ public class ValidationPreparationBudget extends BaseDocumentExtension {
                 workflowInstanceGB = updateGeneratedBudget(workflowInstancesGB.iterator().next() , linkedResourcesPB);
             }
             if(workflowInstanceGB!=null){
-                if(!natureBudget.getValue("sys_Title").equals("Fonctionnement")){
+                if(!natureBudget.getValue("sys_Reference").equals("0002")){
                     Double CreditsOuvertsCETotal = calculMontantTotal(workflowInstanceGB , "CreditsOuvertsCE");
                     workflowInstanceGB.setValue("TotalDesCreditsOuvertsCE", CreditsOuvertsCETotal);
                 }
@@ -116,7 +116,7 @@ public class ValidationPreparationBudget extends BaseDocumentExtension {
                 linkedResourceGB.setValue("TypeBudget", this.typeBudget);
                 linkedResourceGB.setValue("NatureBudget", this.natureBudget);
                 linkedResourceGB.setValue("RubriqueBudgetaire", linkedResourcePB.getValue("RubriqueBudgetaire"));
-                if(!this.natureBudget.getValue("sys_Title").equals("Fonctionnement")){
+                if(!this.natureBudget.getValue("sys_Reference").equals("0002")){
                     linkedResourceGB.setValue("CreditsOuvertsCE", linkedResourcePB.getValue("MontantDuBudgetCE"));
                 }
                 linkedResourceGB.setValue("CreditsOuvertsCP", linkedResourcePB.getValue("MontantDuBudgetCP"));
@@ -155,7 +155,7 @@ public class ValidationPreparationBudget extends BaseDocumentExtension {
                     creditsOuvertsCE = (Double) linkedResourceGB.getValue("CreditsOuvertsCE");
                     creditsOuvertsCP = (Double) linkedResourceGB.getValue("CreditsOuvertsCP");
                     if (rubriqueBudgetairePB.getProtocolURI().equals(rubriqueBudgetaireGB.getProtocolURI())) {
-                        if(!natureBudget.getValue("sys_Title").equals("Fonctionnement")){
+                        if(!natureBudget.getValue("sys_Reference").equals("0002")){
                             creditsOuvertsCE = creditsOuvertsCE.doubleValue() + montantDuBudgetCE.doubleValue();
                             linkedResourceGB.setValue("CreditsOuvertsCE", creditsOuvertsCE);
                         }
@@ -173,7 +173,7 @@ public class ValidationPreparationBudget extends BaseDocumentExtension {
                     linkedResourceGB.setValue("TypeBudget", this.typeBudget);
                     linkedResourceGB.setValue("NatureBudget", this.natureBudget);
                     linkedResourceGB.setValue("RubriqueBudgetaire", linkedResourcePB.getValue("RubriqueBudgetaire"));
-                    if(!natureBudget.getValue("sys_Title").equals("Fonctionnement")){
+                    if(!natureBudget.getValue("sys_Reference").equals("0002")){
                         linkedResourceGB.setValue("CreditsOuvertsCE", montantDuBudgetCE);
                     }
                     linkedResourceGB.setValue("CreditsOuvertsCP", montantDuBudgetCP);

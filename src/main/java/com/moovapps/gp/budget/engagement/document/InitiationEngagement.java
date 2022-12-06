@@ -101,6 +101,8 @@ public class InitiationEngagement extends BaseDocumentExtension {
                         getWorkflowInstance().setValue("Disponible",this.disponible);
                         TextBoxField field = ((TextBoxField) getDocument().getDefaultWidget("MontantAImputer"));
                         DoubleInputComponent component = (DoubleInputComponent) field.getInputComponent();
+                        System.out.println(this.disponible);
+                        System.out.println(getWorkflowInstance().getValue("MontantAImputer"));
                         component.setNumberMax(this.disponible);
                     }
                 }
@@ -139,7 +141,7 @@ public class InitiationEngagement extends BaseDocumentExtension {
             }
             for(ILinkedResource iLinkedResource : linkedResources){
                 if(((IStorageResource)iLinkedResource.getValue("RubriqueBudgetaire")).getValue("RubriqueBudgetaire").equals(protocolURI)){
-                    if(iLinkedResource.getValue("Disponible")!=null && montantEngager > ((Number) iLinkedResource.getValue("Disponible")).doubleValue()){
+                    if(iLinkedResource.getValue("Disponible")!=null &&  montantEngager > ((Number) iLinkedResource.getValue("Disponible")).doubleValue()){
                         getResourceController().alert(getWorkflowModule().getStaticString("LG_DISPO_LOWER"));
                         return false;
                     }
