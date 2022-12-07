@@ -7,6 +7,8 @@ import com.axemble.vdp.ui.core.document.fields.DateField;
 import com.axemble.vdp.ui.core.document.fields.TextBoxField;
 import com.axemble.vdp.ui.framework.widgets.components.sys.forms.DoubleInputComponent;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -37,6 +39,9 @@ public class AnnulationRAP extends BaseResourceExtension {
             if (linkedResourceCollection.isEmpty()) {
                 TextBoxField field = ((TextBoxField) getDocument().getDefaultWidget("MontantAnnule"));
                 DoubleInputComponent component = (DoubleInputComponent) field.getInputComponent();
+                BigDecimal bd = BigDecimal.valueOf(Max);
+                bd = bd.setScale(2, RoundingMode.HALF_UP);
+                Max = bd.doubleValue();
                 component.setNumberMax(Max);
             } else {
                 for (int i = 0; i < linkedResourceCollection.size(); i++) {
@@ -48,6 +53,9 @@ public class AnnulationRAP extends BaseResourceExtension {
                 }
                 TextBoxField field = ((TextBoxField) getDocument().getDefaultWidget("MontantAnnule"));
                 DoubleInputComponent component = (DoubleInputComponent) field.getInputComponent();
+                BigDecimal bd = BigDecimal.valueOf(Max);
+                bd = bd.setScale(2, RoundingMode.HALF_UP);
+                Max = bd.doubleValue();
                 component.setNumberMax(Max);
             }
         }

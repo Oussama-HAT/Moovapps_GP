@@ -10,6 +10,8 @@ import com.moovapps.gp.helpers.DateService;
 import com.moovapps.gp.services.DirectoryService;
 import com.moovapps.gp.services.WorkflowsService;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -55,13 +57,16 @@ public class InitiationEngagement extends BaseDocumentExtension {
             }
             if(getWorkflowInstance().getValue("RubriqueBudgetaire")!=null && getWorkflowInstance().getValue("Disponible")!=null) {
                 this.disponible = ((Number) getWorkflowInstance().getValue("Disponible")).doubleValue();
+                BigDecimal bd = BigDecimal.valueOf(this.disponible);
+                bd = bd.setScale(2, RoundingMode.HALF_UP);
+                getWorkflowInstance().setValue("Disponible",bd.doubleValue());
+                this.disponible = bd.doubleValue();
                 TextBoxField field = ((TextBoxField) getDocument().getDefaultWidget("MontantAImputer"));
                 DoubleInputComponent component = (DoubleInputComponent) field.getInputComponent();
                 component.setNumberMax(this.disponible);
             }
 
             getDocument().getDefaultWidget("CANCEL_Engagement");
-            ResourceTableInputComponent resourceTableInputComponent = null;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -76,7 +81,7 @@ public class InitiationEngagement extends BaseDocumentExtension {
              if(property.getName().equals("AnneeBudgetaire") || property.getName().equals("NatureBudget")){
                 getWorkflowInstance().setValue("RubriqueBudgetaire", null );
                 if(linkedResources!=null && !linkedResources.isEmpty()){
-                    ArrayList<IOption> options = new ArrayList<IOption>();
+                    ArrayList<IOption> options = new ArrayList<>();
                     for(ILinkedResource iLinkedResource : linkedResources){
                         options.add(getWorkflowModule().createListOption((String) ((IStorageResource)iLinkedResource.getValue("RubriqueBudgetaire")).getValue("RubriqueBudgetaire"), (String) ((IStorageResource)iLinkedResource.getValue("RubriqueBudgetaire")).getValue("RubriqueBudgetaire")));
                     }
@@ -97,12 +102,14 @@ public class InitiationEngagement extends BaseDocumentExtension {
                                                                     .findFirst()
                                                                     .orElse(null);
                     if(iLinkedResource!=null){
+                        BigDecimal bd = BigDecimal.valueOf(this.disponible);
+                        bd = bd.setScale(2, RoundingMode.HALF_UP);
+                        getWorkflowInstance().setValue("Disponible",bd.doubleValue());
+                        this.disponible = bd.doubleValue();
                         this.disponible = iLinkedResource.getValue("Disponible")!=null ? ((Number) iLinkedResource.getValue("Disponible")).doubleValue() : ((Number) iLinkedResource.getValue("CreditsOuvertsCP")).doubleValue();
                         getWorkflowInstance().setValue("Disponible",this.disponible);
                         TextBoxField field = ((TextBoxField) getDocument().getDefaultWidget("MontantAImputer"));
                         DoubleInputComponent component = (DoubleInputComponent) field.getInputComponent();
-                        System.out.println(this.disponible);
-                        System.out.println(getWorkflowInstance().getValue("MontantAImputer"));
                         component.setNumberMax(this.disponible);
                     }
                 }

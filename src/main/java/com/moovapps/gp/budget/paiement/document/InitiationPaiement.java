@@ -8,6 +8,8 @@ import com.axemble.vdp.ui.framework.widgets.components.sys.forms.DoubleInputComp
 import com.moovapps.gp.budget.helpers.Const;
 import com.moovapps.gp.services.WorkflowsService;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -42,6 +44,9 @@ public class InitiationPaiement extends BaseDocumentExtension {
                     this.resteApaye = ((Number) this.EngagementInstance.getValue("ResteAPayer")).doubleValue();
                     TextBoxField field = ((TextBoxField) getDocument().getDefaultWidget("MontantAPayer"));
                     DoubleInputComponent component = (DoubleInputComponent) field.getInputComponent();
+                    BigDecimal bd = BigDecimal.valueOf(this.resteApaye);
+                    bd = bd.setScale(2, RoundingMode.HALF_UP);
+                    this.resteApaye = bd.doubleValue();
                     component.setNumberMax(this.resteApaye);
                 }
             }
@@ -50,6 +55,9 @@ public class InitiationPaiement extends BaseDocumentExtension {
                     this.resteApaye = ((Number) this.RAPInstance.getValue("ResteAPayer")).doubleValue();
                     TextBoxField field = ((TextBoxField) getDocument().getDefaultWidget("MontantAPayer"));
                     DoubleInputComponent component = (DoubleInputComponent) field.getInputComponent();
+                    BigDecimal bd = BigDecimal.valueOf(this.resteApaye);
+                    bd = bd.setScale(2, RoundingMode.HALF_UP);
+                    this.resteApaye = bd.doubleValue();
                     component.setNumberMax(this.resteApaye);
                 }
             }
