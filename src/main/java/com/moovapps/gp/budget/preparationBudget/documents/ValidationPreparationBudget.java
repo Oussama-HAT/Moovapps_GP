@@ -12,6 +12,8 @@ import com.moovapps.gp.budget.helpers.Const;
 import com.moovapps.gp.services.DataUniversService;
 import com.moovapps.gp.services.DirectoryService;
 import com.moovapps.gp.services.WorkflowsService;
+
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -57,10 +59,10 @@ public class ValidationPreparationBudget extends BaseDocumentExtension {
             }
             if(workflowInstanceGB!=null){
                 if(!natureBudget.getValue("sys_Reference").equals("0002")){
-                    Double CreditsOuvertsCETotal = calculMontantTotal(workflowInstanceGB , "CreditsOuvertsCE");
+                    BigDecimal CreditsOuvertsCETotal = calculMontantTotal(workflowInstanceGB , "CreditsOuvertsCE");
                     workflowInstanceGB.setValue("TotalDesCreditsOuvertsCE", CreditsOuvertsCETotal);
                 }
-                Double CreditsOuvertsCPTotal = calculMontantTotal(workflowInstanceGB , "CreditsOuvertsCP");
+                BigDecimal CreditsOuvertsCPTotal = calculMontantTotal(workflowInstanceGB , "CreditsOuvertsCP");
                 workflowInstanceGB.setValue("TotalDesCreditsOuvertsCP", CreditsOuvertsCPTotal);
                 workflowInstanceGB.save(this.respBudgetContext);
             }
@@ -77,14 +79,14 @@ public class ValidationPreparationBudget extends BaseDocumentExtension {
         return super.onBeforeSubmit(action);
     }
 
-    private Double calculMontantTotal(IWorkflowInstance workflowInstanceGB , String fieldtoCalculate) {
-        Double montantTotal = 0.0D;
+    private BigDecimal calculMontantTotal(IWorkflowInstance workflowInstanceGB , String fieldtoCalculate) {
+        BigDecimal montantTotal = BigDecimal.ZERO;
         try {
             Collection<ILinkedResource> linkedResourcesGB = (Collection<ILinkedResource>) workflowInstanceGB.getLinkedResources("RB_Budget_Tab");
-            Double montant = null;
+            BigDecimal montant = null;
             for (ILinkedResource linkedResourceGB : linkedResourcesGB) {
-                montant = linkedResourceGB.getValue(fieldtoCalculate)!=null ? (Double) linkedResourceGB.getValue(fieldtoCalculate) : Double.valueOf(0.0D);
-                montantTotal += montant.doubleValue();
+                montant = linkedResourceGB.getValue(fieldtoCalculate)!=null ? (BigDecimal) linkedResourceGB.getValue(fieldtoCalculate) : BigDecimal.ZERO;
+                montantTotal = montantTotal.add(montant);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -104,63 +106,58 @@ public class ValidationPreparationBudget extends BaseDocumentExtension {
             workflowInstance.setValue("NatureBudget", this.natureBudget);
             ILinkedResource linkedResourceGB = null;
             IStorageResource previousBudget_STO = null;
-            String previousyear = String.valueOf(Integer.valueOf(this.anneeBudgetaire)-1);
+            String previousyear = String.valueOf(Integer.parseInt(this.anneeBudgetaire)-1);
             for (ILinkedResource linkedResourcePB : linkedResourcesPB) {
                 linkedResourceGB = workflowInstance.createLinkedResource("RB_Budget_Tab");
                 previousBudget_STO = getBudgetPreviousYear((IStorageResource) linkedResourcePB.getValue("RubriqueBudgetaire"), previousyear);
                 if(previousBudget_STO!=null && this.typeBudget.equals("Dépenses")){
-                    linkedResourceGB.setValue("RAPN1",previousBudget_STO.getValue("RAP"));
-                    linkedResourceGB.setValue("RAP_CURRENT",previousBudget_STO.getValue("RAP"));
+                    linkedResourceGB.setValue("RAPN1",(BigDecimal)previousBudget_STO.getValue("RAP"));
+                    linkedResourceGB.setValue("RAP_CURRENT",(BigDecimal)previousBudget_STO.getValue("RAP"));
                 }
                 linkedResourceGB.setValue("AnneeBudgetaire", this.anneeBudgetaire);
                 linkedResourceGB.setValue("TypeBudget", this.typeBudget);
                 linkedResourceGB.setValue("NatureBudget", this.natureBudget);
                 linkedResourceGB.setValue("RubriqueBudgetaire", linkedResourcePB.getValue("RubriqueBudgetaire"));
                 if(!this.natureBudget.getValue("sys_Reference").equals("0002")){
-                    linkedResourceGB.setValue("CreditsOuvertsCE", linkedResourcePB.getValue("MontantDuBudgetCE"));
+                    linkedResourceGB.setValue("CreditsOuvertsCE", (BigDecimal)linkedResourcePB.getValue("MontantDuBudgetCE"));
                 }
-                linkedResourceGB.setValue("CreditsOuvertsCP", linkedResourcePB.getValue("MontantDuBudgetCP"));
+                linkedResourceGB.setValue("CreditsOuvertsCP", (BigDecimal)linkedResourcePB.getValue("MontantDuBudgetCP"));
                 linkedResourceGB.save(this.respBudgetContext);
                 workflowInstance.addLinkedResource(linkedResourceGB);
             }
             workflowInstance.save(this.respBudgetContext);
             return workflowInstance;
-        } catch (WorkflowModuleException e) {
-            e.printStackTrace();
-        } catch (ProjectModuleException e) {
-            e.printStackTrace();
-        } catch (DirectoryModuleException e) {
+        } catch (WorkflowModuleException | ProjectModuleException | DirectoryModuleException e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    private IWorkflowInstance updateGeneratedBudget(IWorkflowInstance workflowInstanceGB , Collection<ILinkedResource> linkedResourcesPB)
-    {
+    private IWorkflowInstance updateGeneratedBudget(IWorkflowInstance workflowInstanceGB , Collection<ILinkedResource> linkedResourcesPB) {
         boolean trouve = false;
         IWorkflowInstance workflowInstance = workflowInstanceGB;
         try {
             Collection<ILinkedResource> linkedResourcesGB = (Collection<ILinkedResource>) workflowInstanceGB.getLinkedResources("RB_Budget_Tab");
             IStorageResource rubriqueBudgetairePB = null, rubriqueBudgetaireGB = null , previousBudget_STO = null;
-            Double montantDuBudgetCE = null, creditsOuvertsCE = null;
-            Double montantDuBudgetCP = null, creditsOuvertsCP = null;
-            String previousyear = String.valueOf(Integer.valueOf(this.anneeBudgetaire)-1);
+            BigDecimal montantDuBudgetCE = null, creditsOuvertsCE = null;
+            BigDecimal montantDuBudgetCP = null, creditsOuvertsCP = null;
+            String previousyear = String.valueOf(Integer.parseInt(this.anneeBudgetaire)-1);
             for (ILinkedResource linkedResourcePB : linkedResourcesPB) {
                 rubriqueBudgetairePB = (IStorageResource) linkedResourcePB.getValue("RubriqueBudgetaire");
-                montantDuBudgetCP = (Double) linkedResourcePB.getValue("MontantDuBudgetCP");
-                montantDuBudgetCE = (Double) linkedResourcePB.getValue("MontantDuBudgetCE");
+                montantDuBudgetCP = (BigDecimal) linkedResourcePB.getValue("MontantDuBudgetCP");
+                montantDuBudgetCE = (BigDecimal) linkedResourcePB.getValue("MontantDuBudgetCE");
                 trouve = false;
                 for (ILinkedResource linkedResourceGB : linkedResourcesGB) {
                     rubriqueBudgetaireGB = (IStorageResource) linkedResourceGB.getValue("RubriqueBudgetaire");
-                    creditsOuvertsCE = (Double) linkedResourceGB.getValue("CreditsOuvertsCE");
-                    creditsOuvertsCP = (Double) linkedResourceGB.getValue("CreditsOuvertsCP");
+                    creditsOuvertsCE = (BigDecimal) linkedResourceGB.getValue("CreditsOuvertsCE");
+                    creditsOuvertsCP = (BigDecimal) linkedResourceGB.getValue("CreditsOuvertsCP");
                     if (rubriqueBudgetairePB.getProtocolURI().equals(rubriqueBudgetaireGB.getProtocolURI())) {
                         if(!natureBudget.getValue("sys_Reference").equals("0002")){
-                            creditsOuvertsCE = creditsOuvertsCE.doubleValue() + montantDuBudgetCE.doubleValue();
-                            linkedResourceGB.setValue("CreditsOuvertsCE", creditsOuvertsCE);
+                            creditsOuvertsCE = creditsOuvertsCE.add(montantDuBudgetCE);
+                            linkedResourceGB.setValue("CreditsOuvertsCE", new BigDecimal(creditsOuvertsCE.toString()));
                         }
-                        creditsOuvertsCP = creditsOuvertsCP.doubleValue() + montantDuBudgetCP.doubleValue();
-                        linkedResourceGB.setValue("CreditsOuvertsCP", creditsOuvertsCP);
+                        creditsOuvertsCP = creditsOuvertsCP.add(montantDuBudgetCP);
+                        linkedResourceGB.setValue("CreditsOuvertsCP", new BigDecimal(creditsOuvertsCP.toString()));
                         linkedResourceGB.save(this.respBudgetContext);
                         trouve = true;
                         break;
@@ -178,9 +175,10 @@ public class ValidationPreparationBudget extends BaseDocumentExtension {
                     }
                     linkedResourceGB.setValue("CreditsOuvertsCP", montantDuBudgetCP);
                     previousBudget_STO = getBudgetPreviousYear((IStorageResource) linkedResourcePB.getValue("RubriqueBudgetaire"), previousyear);
+                    BigDecimal rap = (BigDecimal) previousBudget_STO.getValue("RAP");
                     if(previousBudget_STO!=null && this.typeBudget.equals("Dépenses")){
-                        linkedResourceGB.setValue("RAPN1",previousBudget_STO.getValue("RAP"));
-                        linkedResourceGB.setValue("RAP_CURRENT",previousBudget_STO.getValue("RAP"));
+                        linkedResourceGB.setValue("RAPN1",rap);
+                        linkedResourceGB.setValue("RAP_CURRENT",rap);
                     }
                     linkedResourceGB.save(this.respBudgetContext);
                     workflowInstanceGB.addLinkedResource(linkedResourceGB);
