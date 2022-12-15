@@ -6,6 +6,7 @@ import com.moovapps.gp.budget.helpers.Const;
 import com.moovapps.gp.budget.helpers.calculate;
 import com.moovapps.gp.services.WorkflowsService;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 
 public class EN_updateRubriquesBudget extends BaseDocumentExtension {
@@ -21,23 +22,23 @@ public class EN_updateRubriquesBudget extends BaseDocumentExtension {
 
     private IStorageResource sto_natureBudget = null;
 
-    private double montantEngager = 0.0D;
+    private BigDecimal montantEngager = BigDecimal.ZERO;
 
-    private double totalengagement_RB = 0.0D;
+    private BigDecimal totalengagement_RB = BigDecimal.ZERO;
 
-    private double totalpaiement_RB = 0.0D;
+    private BigDecimal totalpaiement_RB = BigDecimal.ZERO;
 
-    private double rapLibere_RB = 0.0D;
+    private BigDecimal rapLibere_RB = BigDecimal.ZERO;
 
-    private double resteAPayer_RB = 0.0D;
+    private BigDecimal resteAPayer_RB = BigDecimal.ZERO;
 
-    private double creditsouvertsCP = 0.0D;
+    private BigDecimal creditsouvertsCP = BigDecimal.ZERO;
 
-    private double totalmontantAnnule = 0.0D;
+    private BigDecimal totalmontantAnnule = BigDecimal.ZERO;
 
-    private double disponible = 0.0D;
+    private BigDecimal disponible = BigDecimal.ZERO;
 
-    private double montantPaye = 0.0D;
+    private BigDecimal montantPaye = BigDecimal.ZERO;
 
 
     public boolean onBeforeSubmit(IAction action) {
@@ -47,9 +48,9 @@ public class EN_updateRubriquesBudget extends BaseDocumentExtension {
                 this.anneeBudgetaire = (String) getWorkflowInstance().getValue("AnneeBudgetaire");
                 this.sto_natureBudget = (IStorageResource) getWorkflowInstance().getValue("NatureBudget");
                 this.RubriqueBudgetaire = (String) getWorkflowInstance().getValue("RubriqueBudgetaire");
-                this.montantEngager = ((Number) getWorkflowInstance().getValue("MontantAImputer")).doubleValue();
-                this.montantPaye = getWorkflowInstance().getValue("MontantPaye") !=null ? ((Number) getWorkflowInstance().getValue("MontantPaye")).doubleValue() : 0.0D;
-                this.totalmontantAnnule = getWorkflowInstance().getValue("MontantTotalAnnule") != null ? ((Number) getWorkflowInstance().getValue("MontantTotalAnnule")).doubleValue() : 0.0D;
+                this.montantEngager = (BigDecimal) getWorkflowInstance().getValue("MontantAImputer");
+                this.montantPaye = getWorkflowInstance().getValue("MontantPaye") !=null ? (BigDecimal) getWorkflowInstance().getValue("MontantPaye") : BigDecimal.ZERO;
+                this.totalmontantAnnule = getWorkflowInstance().getValue("MontantTotalAnnule") != null ? (BigDecimal) getWorkflowInstance().getValue("MontantTotalAnnule") : BigDecimal.ZERO;
                 Collection<ILinkedResource> linkedResources = getRubriqueBudgetByCurrentBudget();
                 if (linkedResources == null || linkedResources.isEmpty()) {
                     getResourceController().alert(getWorkflowModule().getStaticString("LG_BUDGET_NOT_OPENED"));
@@ -65,21 +66,21 @@ public class EN_updateRubriquesBudget extends BaseDocumentExtension {
                     return false;
                 }
 
-                if (iLinkedResource.getValue("Disponible") != null && montantEngager > ((Number) iLinkedResource.getValue("Disponible")).doubleValue()) {
+                if (iLinkedResource.getValue("Disponible") != null && montantEngager.compareTo((BigDecimal) iLinkedResource.getValue("Disponible")) > 0) {
                     getResourceController().alert(getWorkflowModule().getStaticString("LG_DISPO_LOWER"));
                     return false;
                 }
-                this.creditsouvertsCP = ((Number) iLinkedResource.getValue("CreditsOuvertsCP")).doubleValue();
-                this.totalengagement_RB = iLinkedResource.getValue("TotalDesEngagements") != null ? ((Number) iLinkedResource.getValue("TotalDesEngagements")).doubleValue() : 0.0D;
-                this.resteAPayer_RB = iLinkedResource.getValue("RAP_CURRENT") != null ? ((Number) iLinkedResource.getValue("RAP_CURRENT")).doubleValue() : 0.0D;
-                double totalAnnule_RB =  iLinkedResource.getValue("TotalAnnulationDiminution") != null ? ((Number) iLinkedResource.getValue("TotalAnnulationDiminution")).doubleValue() : 0.0D;
-                this.disponible = this.creditsouvertsCP -(this.totalengagement_RB + this.montantEngager) + totalAnnule_RB ;
-                iLinkedResource.setValue("TotalDesEngagements", this.totalengagement_RB + this.montantEngager);
+                this.creditsouvertsCP = (BigDecimal) iLinkedResource.getValue("CreditsOuvertsCP");
+                this.totalengagement_RB = iLinkedResource.getValue("TotalDesEngagements") != null ? (BigDecimal) iLinkedResource.getValue("TotalDesEngagements"): BigDecimal.ZERO;
+                this.resteAPayer_RB = iLinkedResource.getValue("RAP_CURRENT") != null ? (BigDecimal) iLinkedResource.getValue("RAP_CURRENT") : BigDecimal.ZERO;
+                BigDecimal totalAnnule_RB =  iLinkedResource.getValue("TotalAnnulationDiminution") != null ? (BigDecimal) iLinkedResource.getValue("TotalAnnulationDiminution") : BigDecimal.ZERO;
+                this.disponible = this.creditsouvertsCP.subtract(this.totalengagement_RB.add(this.montantEngager)).subtract(totalAnnule_RB);
+                iLinkedResource.setValue("TotalDesEngagements", this.totalengagement_RB.add(this.montantEngager));
                 iLinkedResource.setValue("Disponible", this.disponible);
-                iLinkedResource.setValue("RAP_CURRENT", this.resteAPayer_RB + this.montantEngager);
+                iLinkedResource.setValue("RAP_CURRENT", this.resteAPayer_RB.add(this.montantEngager));
                 iLinkedResource.save(this.sysAdminContext);
                 iLinkedResource.getParentInstance().save(this.sysAdminContext);
-                getWorkflowInstance().setValue("ResteAPayer" ,this.montantEngager - this.totalmontantAnnule  - this.montantPaye);
+                getWorkflowInstance().setValue("ResteAPayer" ,this.montantEngager.subtract(this.totalmontantAnnule).subtract(this.montantPaye));
                 getWorkflowInstance().save("ResteAPayer");
                 if(parentInstance!=null){
                     if(parentInstance.getWorkflow().getWorkflowContainer().getName().equals("BC")){

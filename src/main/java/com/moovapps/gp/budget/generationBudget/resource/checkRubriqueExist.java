@@ -5,6 +5,7 @@ import com.axemble.vdoc.sdk.interfaces.ILinkedResource;
 import com.axemble.vdoc.sdk.interfaces.IStorageResource;
 import com.axemble.vdoc.sdk.interfaces.IWorkflowInstance;
 import com.axemble.vdp.ui.core.document.fields.TextBoxField;
+import com.axemble.vdp.ui.framework.widgets.components.sys.forms.BigDecimalInputComponent;
 import com.axemble.vdp.ui.framework.widgets.components.sys.forms.DoubleInputComponent;
 
 import java.math.BigDecimal;
@@ -21,12 +22,9 @@ public class checkRubriqueExist extends BaseResourceExtension {
         try {
             ILinkedResource iLinkedResource = getLinkedResource();
             iLinkedResource.getProtocolURI();
-            Double totalEngagement = (Double) iLinkedResource.getValue("TotalDesEngagements");
+            BigDecimal totalEngagement = (BigDecimal) iLinkedResource.getValue("TotalDesEngagements");
             TextBoxField field = ((TextBoxField) getDocument().getDefaultWidget("CreditsOuvertsCP"));
-            DoubleInputComponent component = (DoubleInputComponent) field.getInputComponent();
-            BigDecimal bd = BigDecimal.valueOf(totalEngagement);
-            bd = bd.setScale(2, RoundingMode.HALF_UP);
-            totalEngagement = bd.doubleValue();
+            BigDecimalInputComponent component = (BigDecimalInputComponent) field.getInputComponent();
             component.setNumberMin(totalEngagement);
         } catch (Exception e) {
             e.printStackTrace();

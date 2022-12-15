@@ -6,6 +6,7 @@ import com.axemble.vdoc.sdk.interfaces.IStorageResource;
 import com.axemble.vdoc.sdk.interfaces.IWorkflowInstance;
 import com.axemble.vdp.ui.core.document.fields.DateField;
 import com.axemble.vdp.ui.core.document.fields.TextBoxField;
+import com.axemble.vdp.ui.framework.widgets.components.sys.forms.BigDecimalInputComponent;
 import com.axemble.vdp.ui.framework.widgets.components.sys.forms.DoubleInputComponent;
 
 import java.math.BigDecimal;
@@ -33,29 +34,25 @@ public class AnnulationEngagement extends BaseResourceExtension {
             Field.setStartSelectionRange(DATE_FORMAT.format(start));
         }
 
-        double Max = ((Number) iWorkflowInstance.getValue("ResteAPayer")).doubleValue();
+        BigDecimal Max = (BigDecimal) iWorkflowInstance.getValue("ResteAPayer");
         ArrayList<ILinkedResource> linkedResourceCollection = (ArrayList<ILinkedResource>) getLinkedResource().getParentInstance().getLinkedResources(getLinkedResource().getDefinition().getName());
         if (linkedResourceCollection != null) {
             if (linkedResourceCollection.isEmpty()) {
                 TextBoxField field = ((TextBoxField) getDocument().getDefaultWidget("MontantAnnule"));
-                DoubleInputComponent component = (DoubleInputComponent) field.getInputComponent();
-                BigDecimal bd = BigDecimal.valueOf(Max);
-                bd = bd.setScale(2, RoundingMode.HALF_UP);
-                Max = bd.doubleValue();
+                BigDecimalInputComponent component = (BigDecimalInputComponent) field.getInputComponent();
                 component.setNumberMax(Max);
             } else {
                 for (int i = 0; i < linkedResourceCollection.size(); i++) {
                     if (!linkedResourceCollection.get(i).getValue("id").equals(getLinkedResource().getValue("id"))) {
                         boolean flagged = (boolean) linkedResourceCollection.get(i).getValue("FLAG");
-                        if(!flagged)
-                        Max -= (linkedResourceCollection.get(i).getValue("MontantAnnule") != null ? (Double) linkedResourceCollection.get(i).getValue("MontantAnnule") : 0);
+                        if(!flagged){
+                            BigDecimal montantAnnule = linkedResourceCollection.get(i).getValue("MontantAnnule")!= null ? (BigDecimal) linkedResourceCollection.get(i).getValue("MontantAnnule") : BigDecimal.ZERO;
+                            Max = Max.subtract(montantAnnule);
+                        }
                     }
                 }
                 TextBoxField field = ((TextBoxField) getDocument().getDefaultWidget("MontantAnnule"));
-                DoubleInputComponent component = (DoubleInputComponent) field.getInputComponent();
-                BigDecimal bd = BigDecimal.valueOf(Max);
-                bd = bd.setScale(2, RoundingMode.HALF_UP);
-                Max = bd.doubleValue();
+                BigDecimalInputComponent component = (BigDecimalInputComponent) field.getInputComponent();
                 component.setNumberMax(Max);
             }
         }

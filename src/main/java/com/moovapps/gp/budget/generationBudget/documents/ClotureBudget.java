@@ -9,6 +9,7 @@ import com.moovapps.gp.budget.helpers.Const;
 import com.moovapps.gp.services.DirectoryService;
 import com.moovapps.gp.services.WorkflowsService;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -19,11 +20,11 @@ public class ClotureBudget extends BaseDocumentExtension {
     private String typeBudget = null;
     private IStorageResource natureBudget = null;
 
-    private double resteApayerEngagement = 0.0D;
-    private double resteApayerRAP = 0.0D;
-    private double disponible = 0.0D;
-    private double montantEngager = 0.0D;
-    private double montantPaye = 0.0D;
+    private BigDecimal resteApayerEngagement = BigDecimal.ZERO;
+    private BigDecimal resteApayerRAP = BigDecimal.ZERO;
+    private BigDecimal disponible = BigDecimal.ZERO;
+    private BigDecimal montantEngager = BigDecimal.ZERO;
+    private BigDecimal montantPaye = BigDecimal.ZERO;
 
     public boolean onBeforeSubmit(IAction action) {
         try {
@@ -39,7 +40,7 @@ public class ClotureBudget extends BaseDocumentExtension {
                     Collection<ILinkedResource> RB_linkedResources = (Collection<ILinkedResource>) getWorkflowInstance().getLinkedResources("RB_Budget_Tab");
                     if (engagementsInstances != null && !engagementsInstances.isEmpty()) {
                         for (IWorkflowInstance engagementworkflowInstance : engagementsInstances) {
-                            this.resteApayerEngagement = ((Number) engagementworkflowInstance.getValue("ResteAPayer")).doubleValue();
+                            this.resteApayerEngagement = (BigDecimal) engagementworkflowInstance.getValue("ResteAPayer");
                                 Collection<IWorkflowInstance> rapInstances = (Collection<IWorkflowInstance>) engagementworkflowInstance.getLinkedWorkflowInstances("FicheRAP");
                                 ILinkedResource iLinkedResource = RB_linkedResources.stream()
                                         .filter(obj -> ((IStorageResource)obj.getValue("RubriqueBudgetaire")).getValue("RubriqueBudgetaire").equals(engagementworkflowInstance.getValue("RubriqueBudgetaire")))
@@ -51,9 +52,9 @@ public class ClotureBudget extends BaseDocumentExtension {
                                 }
 
                                 if (rapInstances == null || rapInstances.isEmpty()) {
-                                    this.montantEngager = ((Number) engagementworkflowInstance.getValue("MontantAImputer")).doubleValue();
-                                    this.montantPaye = ((Number) engagementworkflowInstance.getValue("MontantPaye")).doubleValue();
-                                    this.disponible = ((Number) iLinkedResource.getValue("Disponible")).doubleValue();
+                                    this.montantEngager = (BigDecimal) engagementworkflowInstance.getValue("MontantAImputer");
+                                    this.montantPaye = (BigDecimal) engagementworkflowInstance.getValue("MontantPaye");
+                                    this.disponible = (BigDecimal) iLinkedResource.getValue("Disponible");
                                     IWorkflowInstance RAPInstance = getWorkflowModule().createWorkflowInstance(this.loggedOnContext, iWorkflow, "");
                                     int annee = Integer.parseInt((String) engagementworkflowInstance.getValue("AnneeBudgetaire")) + 1;
                                     RAPInstance.setValue("ReferenceEngagement", engagementworkflowInstance.getValue("sys_Reference"));
@@ -89,11 +90,11 @@ public class ClotureBudget extends BaseDocumentExtension {
                                         getResourceController().alert(getWorkflowModule().getStaticString("LG_RB_NOT_FOUND"));
                                         return false;
                                     }
-                                this.disponible = ((Number) iLinkedResource.getValue("Disponible")).doubleValue();
-                                this.resteApayerRAP = ((Number) iWorkflowInstance.getValue("ResteAPayer")).doubleValue();
-                                this.montantEngager = ((Number) iWorkflowInstance.getValue("MontantAImputer")).doubleValue();
-                                this.montantPaye = ((Number) iWorkflowInstance.getValue("MontantAPayer")).doubleValue();
-                                double cumulePaiementN1 = ((Number)iWorkflowInstance.getValue("CumulDesPaiementsN1")).doubleValue();
+                                this.disponible = (BigDecimal) iLinkedResource.getValue("Disponible");
+                                this.resteApayerRAP = (BigDecimal) iWorkflowInstance.getValue("ResteAPayer");
+                                this.montantEngager = (BigDecimal) iWorkflowInstance.getValue("MontantAImputer");
+                                this.montantPaye = (BigDecimal) iWorkflowInstance.getValue("MontantAPayer");
+                                BigDecimal cumulePaiementN1 = (BigDecimal)iWorkflowInstance.getValue("CumulDesPaiementsN1");
                                 IWorkflowInstance RAPInstance = getWorkflowModule().createWorkflowInstance(this.loggedOnContext, iWorkflow, "");
                                 int annee = Integer.parseInt((String) iWorkflowInstance.getValue("AnneeBudgetaireDestination")) + 1;
                                 RAPInstance.setValue("ReferenceEngagement", iWorkflowInstance.getValue("ReferenceEngagement"));
@@ -107,7 +108,7 @@ public class ClotureBudget extends BaseDocumentExtension {
                                 RAPInstance.setValue("RubriqueBudgetaire", iWorkflowInstance.getValue("RubriqueBudgetaire"));
                                 RAPInstance.setValue("Disponible", this.disponible);
                                 RAPInstance.setValue("MontantAImputer", this.montantEngager);
-                                RAPInstance.setValue("CumulDesPaiementsN1", cumulePaiementN1 + this.montantPaye);
+                                RAPInstance.setValue("CumulDesPaiementsN1", cumulePaiementN1.add(this.montantPaye));
                                 RAPInstance.setValue("ResteAPayerN1", this.resteApayerRAP);
                                 RAPInstance.setValue("MontantAPayer", 0);
                                 RAPInstance.setValue("ResteAPayer", this.resteApayerRAP);
@@ -157,12 +158,12 @@ public class ClotureBudget extends BaseDocumentExtension {
                     budget.setValue("AnneeBudgetaire", iLinkedResource.getValue("AnneeBudgetaire"));
                     budget.setValue("RubriqueBudgetaire", iLinkedResource.getValue("RubriqueBudgetaire"));
                     budget.setValue("ProgrammeDEmploi", iLinkedResource.getValue("ProgrammeDEmploi"));
-                    budget.setValue("CreditsOuvertsCE", iLinkedResource.getValue("CreditsOuvertsCE"));
-                    budget.setValue("CreditsOuvertsCP", iLinkedResource.getValue("CreditsOuvertsCP"));
-                    budget.setValue("RAP", iLinkedResource.getValue("RAP_CURRENT"));
-                    budget.setValue("TotalDesEngagements", iLinkedResource.getValue("TotalDesEngagements"));
-                    budget.setValue("TotalDesPaiements", iLinkedResource.getValue("TotalDesPaiements"));
-                    budget.setValue("Disponible", iLinkedResource.getValue("Disponible"));
+                    budget.setValue("CreditsOuvertsCE", (BigDecimal)iLinkedResource.getValue("CreditsOuvertsCE"));
+                    budget.setValue("CreditsOuvertsCP", (BigDecimal)iLinkedResource.getValue("CreditsOuvertsCP"));
+                    budget.setValue("RAP", (BigDecimal)iLinkedResource.getValue("RAP_CURRENT"));
+                    budget.setValue("TotalDesEngagements", (BigDecimal)iLinkedResource.getValue("TotalDesEngagements"));
+                    budget.setValue("TotalDesPaiements", (BigDecimal)iLinkedResource.getValue("TotalDesPaiements"));
+                    budget.setValue("Disponible", (BigDecimal)iLinkedResource.getValue("Disponible"));
                     budget.save(getDirectoryModule().getLoggedOnUserContext());
                 }
             }

@@ -3,6 +3,7 @@ package com.moovapps.gp.budget.engagement.document;
 import com.axemble.vdoc.sdk.document.extensions.BaseDocumentExtension;
 import com.axemble.vdoc.sdk.interfaces.*;
 import com.axemble.vdp.ui.core.document.fields.TextBoxField;
+import com.axemble.vdp.ui.framework.widgets.components.sys.forms.BigDecimalInputComponent;
 import com.axemble.vdp.ui.framework.widgets.components.sys.forms.DoubleInputComponent;
 import com.axemble.vdp.ui.framework.widgets.components.sys.forms.ResourceTableInputComponent;
 import com.moovapps.gp.budget.helpers.Const;
@@ -26,9 +27,9 @@ public class InitiationEngagement extends BaseDocumentExtension {
     private static final long serialVersionUID = 1L;
     protected IContext sysAdminContext = DirectoryService.getSysAdminContext();
 
-    private double montantAImputer = 0.0D;
+    private BigDecimal montantAImputer = BigDecimal.ZERO;
 
-    private double disponible = 0.0D;
+    private BigDecimal disponible = BigDecimal.ZERO;
 
     public boolean onAfterLoad() {
         try {
@@ -46,7 +47,7 @@ public class InitiationEngagement extends BaseDocumentExtension {
             String anneeBudgetaire = (String) getWorkflowInstance().getValue("AnneeBudgetaire");
             linkedResources = getRubriqueBudgetByCurrentBudget(anneeBudgetaire , natureBudget);
             if(linkedResources!=null && !linkedResources.isEmpty()){
-                ArrayList<IOption> options = new ArrayList<IOption>();
+                ArrayList<IOption> options = new ArrayList<>();
                 for(ILinkedResource iLinkedResource : linkedResources){
                     options.add(getWorkflowModule().createListOption((String) ((IStorageResource)iLinkedResource.getValue("RubriqueBudgetaire")).getValue("RubriqueBudgetaire"), (String) ((IStorageResource)iLinkedResource.getValue("RubriqueBudgetaire")).getValue("RubriqueBudgetaire")));
                 }
@@ -56,13 +57,10 @@ public class InitiationEngagement extends BaseDocumentExtension {
                 getWorkflowInstance().setList("RubriqueBudgetaire", null );
             }
             if(getWorkflowInstance().getValue("RubriqueBudgetaire")!=null && getWorkflowInstance().getValue("Disponible")!=null) {
-                this.disponible = ((Number) getWorkflowInstance().getValue("Disponible")).doubleValue();
-                BigDecimal bd = BigDecimal.valueOf(this.disponible);
-                bd = bd.setScale(2, RoundingMode.HALF_UP);
-                getWorkflowInstance().setValue("Disponible",bd.doubleValue());
-                this.disponible = bd.doubleValue();
+                this.disponible = (BigDecimal) getWorkflowInstance().getValue("Disponible");
+                getWorkflowInstance().setValue("Disponible",this.disponible);
                 TextBoxField field = ((TextBoxField) getDocument().getDefaultWidget("MontantAImputer"));
-                DoubleInputComponent component = (DoubleInputComponent) field.getInputComponent();
+                BigDecimalInputComponent component = (BigDecimalInputComponent) field.getInputComponent();
                 component.setNumberMax(this.disponible);
             }
 
@@ -102,14 +100,10 @@ public class InitiationEngagement extends BaseDocumentExtension {
                                                                     .findFirst()
                                                                     .orElse(null);
                     if(iLinkedResource!=null){
-                        BigDecimal bd = BigDecimal.valueOf(this.disponible);
-                        bd = bd.setScale(2, RoundingMode.HALF_UP);
-                        getWorkflowInstance().setValue("Disponible",bd.doubleValue());
-                        this.disponible = bd.doubleValue();
-                        this.disponible = iLinkedResource.getValue("Disponible")!=null ? ((Number) iLinkedResource.getValue("Disponible")).doubleValue() : ((Number) iLinkedResource.getValue("CreditsOuvertsCP")).doubleValue();
+                        this.disponible = (BigDecimal) getWorkflowInstance().getValue("Disponible");
                         getWorkflowInstance().setValue("Disponible",this.disponible);
                         TextBoxField field = ((TextBoxField) getDocument().getDefaultWidget("MontantAImputer"));
-                        DoubleInputComponent component = (DoubleInputComponent) field.getInputComponent();
+                        BigDecimalInputComponent component = (BigDecimalInputComponent) field.getInputComponent();
                         component.setNumberMax(this.disponible);
                     }
                 }
@@ -140,7 +134,7 @@ public class InitiationEngagement extends BaseDocumentExtension {
     public boolean checkBudget(String protocolURI , String Annee , IStorageResource natureBudget){
         boolean ischecked = true;
         try {
-            double montantEngager = ((Number) getWorkflowInstance().getValue("MontantAImputer")).doubleValue();
+            BigDecimal montantEngager = (BigDecimal) getWorkflowInstance().getValue("MontantAImputer");
             Collection<ILinkedResource> linkedResources = getRubriqueBudgetByCurrentBudget(Annee , natureBudget);
             if(linkedResources==null || linkedResources.isEmpty()){
                 getResourceController().alert(getWorkflowModule().getStaticString("LG_BUDGET_NOT_OPENED"));
@@ -148,7 +142,8 @@ public class InitiationEngagement extends BaseDocumentExtension {
             }
             for(ILinkedResource iLinkedResource : linkedResources){
                 if(((IStorageResource)iLinkedResource.getValue("RubriqueBudgetaire")).getValue("RubriqueBudgetaire").equals(protocolURI)){
-                    if(iLinkedResource.getValue("Disponible")!=null &&  montantEngager > ((Number) iLinkedResource.getValue("Disponible")).doubleValue()){
+                    BigDecimal Disponible = (BigDecimal) iLinkedResource.getValue("Disponible");
+                    if(iLinkedResource.getValue("Disponible")!=null &&  montantEngager.compareTo(Disponible) > 0){
                         getResourceController().alert(getWorkflowModule().getStaticString("LG_DISPO_LOWER"));
                         return false;
                     }

@@ -29,7 +29,7 @@ public class CheckIsPreviousRB_Exist extends BaseDocumentExtension {
                 this.anneeBudgetaire = (String) getWorkflowInstance().getValue("AnneeBudgetaire");
                 this.typeBudget = (String) getWorkflowInstance().getValue("TypeBudget");
                 this.natureBudget = (IStorageResource) getWorkflowInstance().getValue("NatureBudget");
-                String previousyear = String.valueOf(Integer.valueOf(this.anneeBudgetaire)-1);
+                String previousyear = String.valueOf(Integer.parseInt(this.anneeBudgetaire)-1);
                 Collection<IStorageResource> iStorageResources =getBudgetPreviousYear(previousyear);
                 if(RB_linkedResources!=null && !RB_linkedResources.isEmpty()){
                     Collection<IStorageResource> iStorageResourceList = RB_linkedResources.stream().map(obj -> (IStorageResource)obj.getValue("RubriqueBudgetaire")).collect(Collectors.toList());
@@ -39,7 +39,7 @@ public class CheckIsPreviousRB_Exist extends BaseDocumentExtension {
                         if(rubriqueBudgetaire==null){
                             return false;
                         }
-                        if(iStorageResourceList!=null  && !iStorageResourceList.isEmpty() && iStorageResources !=null && !iStorageResources.isEmpty() &&
+                        if(iStorageResourceList!=null && !iStorageResourceList.isEmpty() && iStorageResources !=null && !iStorageResources.isEmpty() &&
                                 !iStorageResourceList.containsAll(iStorageResources)){
                             getResourceController().alert(getWorkflowModule().getStaticString("LG_RBN1_NOT_FOUND"));
                             return false;

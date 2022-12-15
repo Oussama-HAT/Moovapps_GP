@@ -8,6 +8,7 @@ import com.moovapps.gp.budget.helpers.calculate;
 import com.moovapps.gp.services.DirectoryService;
 import com.moovapps.gp.services.WorkflowsService;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 
 public class AnnulationRAP extends BaseDocumentExtension {
@@ -24,13 +25,13 @@ public class AnnulationRAP extends BaseDocumentExtension {
     private IStorageResource natureBudget = null;
 
 
-    private double rapLibere_RB = 0.0D;
+    private BigDecimal rapLibere_RB = BigDecimal.ZERO;
 
-    private double totalmontantAnnule = 0.0D;
+    private BigDecimal totalmontantAnnule = BigDecimal.ZERO;
 
-    private double resteAPayer_RB = 0.0D;
+    private BigDecimal resteAPayer_RB = BigDecimal.ZERO;
 
-    private double montantAnnuler = 0.0D;
+    private BigDecimal montantAnnuler = BigDecimal.ZERO;
 
     @Override
     public boolean onAfterLoad() {
@@ -61,8 +62,8 @@ public class AnnulationRAP extends BaseDocumentExtension {
                 this.natureBudget = (IStorageResource) getWorkflowInstance().getValue("NatureBudget");
                 this.RubriqueBudgetaire = (String) getWorkflowInstance().getValue("RubriqueBudgetaire");
                 Collection<ILinkedResource> annulationlinkedResources = (Collection<ILinkedResource>) getWorkflowInstance().getLinkedResources("CANCEL_RAP");
-                this.totalmontantAnnule = getWorkflowInstance().getValue("MontantTotalAnnule") != null ? ((Number) getWorkflowInstance().getValue("MontantTotalAnnule")).doubleValue() : 0.0D;
-                double rapN = getWorkflowInstance().getValue("ResteAPayerN1")!=null ? ((Number)getWorkflowInstance().getValue("ResteAPayerN1")).doubleValue() : 0.0D;
+                this.totalmontantAnnule = getWorkflowInstance().getValue("MontantTotalAnnule") != null ? (BigDecimal) getWorkflowInstance().getValue("MontantTotalAnnule") : BigDecimal.ZERO;
+                BigDecimal rapN = getWorkflowInstance().getValue("ResteAPayerN1")!=null ? (BigDecimal) getWorkflowInstance().getValue("ResteAPayerN1"): BigDecimal.ZERO;
                 Collection<ILinkedResource> rubriquesLinkedResources = getRubriqueBudgetByCurrentBudget();
                 if (rubriquesLinkedResources == null || rubriquesLinkedResources.isEmpty()) {
                     getResourceController().alert("Action impossible : La rubrique budgétaire n'est pas existe , Merci de contacter votre administrateur !!");
@@ -71,7 +72,8 @@ public class AnnulationRAP extends BaseDocumentExtension {
                 if (annulationlinkedResources != null && !annulationlinkedResources.isEmpty()) {
                     for (ILinkedResource iLinkedResource : annulationlinkedResources) {
                         if (iLinkedResource.getValue("FLAG").equals(false)) {
-                            montantAnnuler += ((Number) iLinkedResource.getValue("MontantAnnule")).doubleValue();
+                            this.montantAnnuler = this.montantAnnuler.add((BigDecimal) iLinkedResource.getValue("MontantAnnule"));
+                            //montantAnnuler += ((Number) iLinkedResource.getValue("MontantAnnule")).doubleValue();
                             iLinkedResource.setValue("FLAG", true);
                             iLinkedResource.save(this.sysAdminContext);
                         }
@@ -84,20 +86,24 @@ public class AnnulationRAP extends BaseDocumentExtension {
                         getResourceController().alert(getWorkflowModule().getStaticString("LG_RB_NOT_FOUND"));
                         return false;
                     }
-                    if (this.montantAnnuler > rapN) {
+                    if (this.montantAnnuler.compareTo(rapN) > 0) {
                         getResourceController().alert(getWorkflowModule().getStaticString("LG_RAPN_LOWER"));
                         return false;
                     }
-                    this.rapLibere_RB = ((Number) rubResource.getValue("RAP_libere")).doubleValue();
-                    this.resteAPayer_RB = rubResource.getValue("RAP_CURRENT") != null ? ((Number) rubResource.getValue("RAP_CURRENT")).doubleValue() : 0.0D;
-                    this.totalmontantAnnule+=this.montantAnnuler;
-                    rubResource.setValue("RAP_libere", this.rapLibere_RB + this.montantAnnuler);
-                    rubResource.setValue("RAP_CURRENT", this.resteAPayer_RB - this.montantAnnuler);
+                    this.rapLibere_RB = (BigDecimal) rubResource.getValue("RAP_libere");
+                    this.resteAPayer_RB = rubResource.getValue("RAP_CURRENT") != null ? (BigDecimal) rubResource.getValue("RAP_CURRENT") : BigDecimal.ZERO;
+                    this.totalmontantAnnule = this.totalmontantAnnule.add(this.montantAnnuler);
+                    //this.totalmontantAnnule+=this.montantAnnuler
+                    BigDecimal rap_lebere , rap_current;
+                    rap_lebere = this.rapLibere_RB.add(this.montantAnnuler);
+                    rap_current = this.rapLibere_RB.subtract(this.montantAnnuler);
+                    rubResource.setValue("RAP_libere", rap_lebere);
+                    rubResource.setValue("RAP_CURRENT", rap_current);
                     rubResource.save(this.sysAdminContext);
                     rubResource.getParentInstance().save(this.sysAdminContext);
 
                 }
-                double rp = rapN - this.montantAnnuler;
+                BigDecimal rp = rapN.subtract(this.montantAnnuler);
                 getWorkflowInstance().setValue("MontantTotalAnnule", this.totalmontantAnnule);
                 getWorkflowInstance().setValue("ResteAPayer", rp);
                 getWorkflowInstance().save(this.sysAdminContext);

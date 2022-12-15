@@ -13,12 +13,13 @@ import com.moovapps.gp.services.DirectoryService;
 import com.moovapps.gp.services.WorkflowsService;
 import org.apache.ecs.html.Col;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 
 public class ValiderOrdreRecette extends BaseDocumentExtension {
     protected IContext sysAdminContext = DirectoryService.getSysAdminContext();
-    private double TotalRecette_RAP = 0.0D;
-    private double montantRecette = 0.0D;
+    private BigDecimal TotalRecette_RAP = BigDecimal.ZERO;
+    private BigDecimal montantRecette = BigDecimal.ZERO;
     @Override
     public boolean onBeforeSubmit(IAction action) {
         try{
@@ -41,23 +42,23 @@ public class ValiderOrdreRecette extends BaseDocumentExtension {
                         getResourceController().alert(getWorkflowModule().getStaticString("LG_RB_NOT_FOUND"));
                         return false;
                     }
-                    this.montantRecette = ((Number) detail.getValue("MontantRecette")).doubleValue();
-                    this.TotalRecette_RAP = iLinkedResource.getValue("TotalRecettesDeLAnnee") != null ? ((Number) iLinkedResource.getValue("TotalRecettesDeLAnnee")).doubleValue() : 0.0D;
-                    iLinkedResource.setValue("TotalRecettesDeLAnnee", this.TotalRecette_RAP + this.montantRecette);
+                    this.montantRecette = (BigDecimal) detail.getValue("MontantRecette");
+                    this.TotalRecette_RAP = iLinkedResource.getValue("TotalRecettesDeLAnnee") != null ? (BigDecimal) iLinkedResource.getValue("TotalRecettesDeLAnnee") : BigDecimal.ZERO;
+                    iLinkedResource.setValue("TotalRecettesDeLAnnee", this.TotalRecette_RAP.add(this.montantRecette));
                     iLinkedResource.save(this.sysAdminContext);
                     iLinkedResource.getParentInstance().save(this.sysAdminContext);
                 }
-                double montant = ((Number) getWorkflowInstance().getValue("MontantTotalRecette")).doubleValue();
+                BigDecimal montant = (BigDecimal) getWorkflowInstance().getValue("MontantTotalRecette");
                 String compte = (String) getWorkflowInstance().getValue("Compte");
                 IStorageResource compteRef = getCompte(compte);
                 IResourceDefinition iResourceDefinition = DataUniversService.getResourceDefinition("ReferentielsBudget", "CompteTresorerie");
                 if(compteRef == null){
                     compteRef = getWorkflowModule().createStorageResource(this.sysAdminContext, iResourceDefinition, null);
                 }
-                double solde = compteRef.getValue("Solde") !=null ? ((Number)compteRef.getValue("Solde")).doubleValue() : 0.0D;
-                solde+=montant;
-                compteRef.setValue("sys_Title" , compte);
-                compteRef.setValue("Solde" , solde);
+                BigDecimal solde = compteRef.getValue("Solde") !=null ? (BigDecimal)compteRef.getValue("Solde") : BigDecimal.ZERO;
+                solde = solde.add(montant);
+                compteRef.setValue("sys_Title",compte);
+                compteRef.setValue("Solde",solde);
                 compteRef.save(this.sysAdminContext);
                 IResourceDefinition tresorieDefinition = DataUniversService.getResourceDefinition("ReferentielsBudget", "Tresorie");
                 IStorageResource Tresorerie = getWorkflowModule().createStorageResource(this.sysAdminContext, tresorieDefinition, null);
@@ -68,7 +69,7 @@ public class ValiderOrdreRecette extends BaseDocumentExtension {
                 Tresorerie.setValue("Reference", getWorkflowInstance().getValue(IProperty.System.REFERENCE));
                 Tresorerie.setValue("Tiers", getWorkflowInstance().getValue("Fournisseur"));
                 Tresorerie.setValue("Type", "Recette");
-                Tresorerie.setValue("Montant", getWorkflowInstance().getValue("MontantTotalRecette"));
+                Tresorerie.setValue("Montant", (BigDecimal)getWorkflowInstance().getValue("MontantTotalRecette"));
                 Tresorerie.save(this.sysAdminContext);
             }
         }
