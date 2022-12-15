@@ -19,7 +19,7 @@ public class LoadRubrique extends BaseResourceExtension {
         String anneeBudgetaire = (String) getLinkedResource().getParentInstance().getValue("AnneeBudgetaire");
         Collection<ILinkedResource> linkedResources = getRubriqueBudgetByCurrentBudget(anneeBudgetaire , natureBudget);
         if(linkedResources!=null && !linkedResources.isEmpty()){
-            ArrayList<IOptionList.IOption> options = new ArrayList<IOptionList.IOption>();
+            ArrayList<IOptionList.IOption> options = new ArrayList<>();
             for(ILinkedResource iLinkedResource : linkedResources){
                 options.add(getWorkflowModule().createListOption((String) ((IStorageResource)iLinkedResource.getValue("RubriqueBudgetaire")).getValue("RubriqueBudgetaire"), (String) ((IStorageResource)iLinkedResource.getValue("RubriqueBudgetaire")).getValue("RubriqueBudgetaire")));
             }

@@ -4,6 +4,7 @@ package com.moovapps.gp.budget.paiement.document;
 import com.axemble.vdoc.sdk.document.extensions.BaseDocumentExtension;
 import com.axemble.vdoc.sdk.interfaces.*;
 import com.axemble.vdp.ui.core.document.fields.TextBoxField;
+import com.axemble.vdp.ui.framework.widgets.components.sys.forms.BigDecimalInputComponent;
 import com.axemble.vdp.ui.framework.widgets.components.sys.forms.DoubleInputComponent;
 import com.moovapps.gp.budget.helpers.Const;
 import com.moovapps.gp.services.WorkflowsService;
@@ -27,7 +28,7 @@ public class InitiationPaiement extends BaseDocumentExtension {
     private IWorkflowInstance RAPInstance = null;
 
 
-    private double resteApaye = 0.0D;
+    private BigDecimal resteApaye = BigDecimal.ZERO;
 
     public boolean onAfterLoad() {
         try {
@@ -41,23 +42,17 @@ public class InitiationPaiement extends BaseDocumentExtension {
             }
             if(getWorkflowInstance().getValue("PaiementRAP").equals(false)) {
                 if(this.EngagementInstance!=null && this.EngagementInstance.getValue("RubriqueBudgetaire")!=null) {
-                    this.resteApaye = ((Number) this.EngagementInstance.getValue("ResteAPayer")).doubleValue();
+                    this.resteApaye = (BigDecimal) this.EngagementInstance.getValue("ResteAPayer");
                     TextBoxField field = ((TextBoxField) getDocument().getDefaultWidget("MontantAPayer"));
-                    DoubleInputComponent component = (DoubleInputComponent) field.getInputComponent();
-                    BigDecimal bd = BigDecimal.valueOf(this.resteApaye);
-                    bd = bd.setScale(2, RoundingMode.HALF_UP);
-                    this.resteApaye = bd.doubleValue();
+                    BigDecimalInputComponent component = (BigDecimalInputComponent) field.getInputComponent();
                     component.setNumberMax(this.resteApaye);
                 }
             }
             else{
                 if(this.RAPInstance!=null && this.RAPInstance.getValue("RubriqueBudgetaire")!=null) {
-                    this.resteApaye = ((Number) this.RAPInstance.getValue("ResteAPayer")).doubleValue();
+                    this.resteApaye = (BigDecimal) this.RAPInstance.getValue("ResteAPayer");
                     TextBoxField field = ((TextBoxField) getDocument().getDefaultWidget("MontantAPayer"));
-                    DoubleInputComponent component = (DoubleInputComponent) field.getInputComponent();
-                    BigDecimal bd = BigDecimal.valueOf(this.resteApaye);
-                    bd = bd.setScale(2, RoundingMode.HALF_UP);
-                    this.resteApaye = bd.doubleValue();
+                    BigDecimalInputComponent component = (BigDecimalInputComponent) field.getInputComponent();
                     component.setNumberMax(this.resteApaye);
                 }
             }
@@ -83,9 +78,9 @@ public class InitiationPaiement extends BaseDocumentExtension {
                                 .findFirst()
                                 .orElse(null);
                         if (iLinkedResource != null) {
-                            this.resteApaye = ((Number) this.EngagementInstance.getValue("ResteAPayer")).doubleValue();
+                            this.resteApaye = (BigDecimal) this.EngagementInstance.getValue("ResteAPayer");
                             TextBoxField field = ((TextBoxField) getDocument().getDefaultWidget("MontantAPayer"));
-                            DoubleInputComponent component = (DoubleInputComponent) field.getInputComponent();
+                            BigDecimalInputComponent component = (BigDecimalInputComponent) field.getInputComponent();
                             component.setNumberMax(this.resteApaye);
                         }
                     }
@@ -101,9 +96,9 @@ public class InitiationPaiement extends BaseDocumentExtension {
                                 .findFirst()
                                 .orElse(null);
                         if (iLinkedResource != null) {
-                            this.resteApaye = ((Number) this.RAPInstance.getValue("ResteAPayer")).doubleValue();
+                            this.resteApaye = (BigDecimal) this.RAPInstance.getValue("ResteAPayer");
                             TextBoxField field = ((TextBoxField) getDocument().getDefaultWidget("MontantAPayer"));
-                            DoubleInputComponent component = (DoubleInputComponent) field.getInputComponent();
+                            BigDecimalInputComponent component = (BigDecimalInputComponent) field.getInputComponent();
                             component.setNumberMax(this.resteApaye);
                         }
                     }
@@ -121,7 +116,6 @@ public class InitiationPaiement extends BaseDocumentExtension {
         this.RAPInstance= (IWorkflowInstance) getWorkflowInstance().getValue("RAP_INSTANCE");
         this.anneeBudgetaire = (String) getWorkflowInstance().getValue("AnneeBudgetaire");
         this.natureBudget = (IStorageResource) getWorkflowInstance().getValue("NatureBudget");
-        String anneeBudgetaire = (String) getWorkflowInstance().getValue("AnneeBudgetaire");
         String RubriqueBudgetaire = null;
         if(getWorkflowInstance().getValue("PaiementRAP").equals(false)) {
             RubriqueBudgetaire = (String) this.EngagementInstance.getValue("RubriqueBudgetaire");
@@ -144,15 +138,17 @@ public class InitiationPaiement extends BaseDocumentExtension {
     public boolean checkBudget(String RubriqueBudgetaire){
         boolean ischecked = true;
         try {
-            double MontantAPayer = ((Number) getWorkflowInstance().getValue("MontantAPayer")).doubleValue();
+            BigDecimal MontantAPayer = (BigDecimal) getWorkflowInstance().getValue("MontantAPayer");
             Collection<ILinkedResource> linkedResources = getRubriqueBudgetByCurrentBudget();
             if(linkedResources==null || linkedResources.isEmpty()){
                 getResourceController().alert(getWorkflowModule().getStaticString("LG_BUDGET_NOT_OPENED"));
                 return false;
             }
+            BigDecimal RAP_CURRENT;
             for(ILinkedResource iLinkedResource : linkedResources){
                 if(((IStorageResource)iLinkedResource.getValue("RubriqueBudgetaire")).getValue("RubriqueBudgetaire").equals(RubriqueBudgetaire)){
-                    if(iLinkedResource.getValue("RAP_CURRENT")!=null && MontantAPayer > ((Number) iLinkedResource.getValue("RAP_CURRENT")).doubleValue()){
+                    RAP_CURRENT = (BigDecimal) iLinkedResource.getValue("RAP_CURRENT");
+                    if(iLinkedResource.getValue("RAP_CURRENT")!=null && MontantAPayer.compareTo(RAP_CURRENT) > 0){
                         getResourceController().alert("Action impossible : Le montant de paiement est supérieur a le reste a payé !!");
                         return false;
                     }

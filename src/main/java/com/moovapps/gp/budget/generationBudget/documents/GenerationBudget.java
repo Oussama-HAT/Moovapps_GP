@@ -15,6 +15,7 @@ import com.moovapps.gp.budget.helpers.Const;
 import com.moovapps.gp.services.DirectoryService;
 import com.moovapps.gp.services.WorkflowsService;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -110,19 +111,19 @@ public class GenerationBudget extends BaseDocumentExtension {
     }
 
 
-    private Double MAJMontantDisponible() {
-        Double montantTotal = Double.valueOf(0.0D);
+    private BigDecimal MAJMontantDisponible() {
+        BigDecimal montantTotal = BigDecimal.ZERO;
         try {
             Collection<ILinkedResource> linkedResourcesGB = (Collection<ILinkedResource>) getWorkflowInstance().getLinkedResources("RB_Budget_Tab");
-            Double CreditsOuvertsCP = 0.0D;
-            Double TotalEngagement = 0.0D;
-            Double TotalAnnulation = 0.0D;
-            Double disponible = 0.0D;
+            BigDecimal CreditsOuvertsCP =  BigDecimal.ZERO;
+            BigDecimal TotalEngagement =  BigDecimal.ZERO;
+            BigDecimal TotalAnnulation =  BigDecimal.ZERO;
+            BigDecimal disponible =  BigDecimal.ZERO;
             for (ILinkedResource linkedResourceGB : linkedResourcesGB) {
-                CreditsOuvertsCP = (Double) linkedResourceGB.getValue("CreditsOuvertsCP");
-                TotalEngagement = (Double) linkedResourceGB.getValue("TotalDesEngagements");
-                TotalAnnulation = (Double) linkedResourceGB.getValue("TotalAnnulationDiminution");
-                disponible = (CreditsOuvertsCP - TotalEngagement)+TotalAnnulation;
+                CreditsOuvertsCP = (BigDecimal) linkedResourceGB.getValue("CreditsOuvertsCP");
+                TotalEngagement = (BigDecimal) linkedResourceGB.getValue("TotalDesEngagements");
+                TotalAnnulation = (BigDecimal) linkedResourceGB.getValue("TotalAnnulationDiminution");
+                disponible = CreditsOuvertsCP.subtract(TotalEngagement).add(TotalAnnulation);
                 linkedResourceGB.setValue("Disponible", disponible);
                 linkedResourceGB.save(this.sysAdminContext);
             }

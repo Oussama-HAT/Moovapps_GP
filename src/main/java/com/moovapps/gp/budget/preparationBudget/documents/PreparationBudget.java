@@ -77,7 +77,7 @@ public class PreparationBudget extends BaseDocumentExtension {
             IViewController viewController = getWorkflowModule().getViewController(this.sysAdminContext, IResource.class);
             viewController.addEqualsConstraint("TypeBudget", typeBudget);
             viewController.addEqualsConstraint("NatureBudget", natureBudget);
-            viewController.addEqualsConstraint("Actif", Boolean.valueOf(true));
+            viewController.addEqualsConstraint("Actif", Boolean.TRUE);
             Collection<IStorageResource> storageResources = viewController.evaluate(DataUniversService.getResourceDefinition("ReferentielsBudget", "RubriquesBudgetaires"));
             ILinkedResource newLinkedResourcePB = null;
             ArrayList<ILinkedResource> collectionLinkedResourcePB = new ArrayList<>();

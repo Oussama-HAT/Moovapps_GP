@@ -8,6 +8,7 @@ import com.moovapps.gp.budget.helpers.calculate;
 import com.moovapps.gp.services.DataUniversService;
 import com.moovapps.gp.services.DirectoryService;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 
 public class ValiderPaiement extends BaseDocumentExtension {
@@ -17,23 +18,23 @@ public class ValiderPaiement extends BaseDocumentExtension {
 
     private String typeBudget = "Dépenses";
 
-    private double montantPaiement = 0.0D;
+    private BigDecimal montantPaiement = BigDecimal.ZERO;
 
-    private double montantPaye_Engagement = 0.0D;
+    private BigDecimal montantPaye_Engagement = BigDecimal.ZERO;
 
-    private double montantPaye_RAP = 0.0D;
+    private BigDecimal montantPaye_RAP = BigDecimal.ZERO;
 
-    private double resteAPayer_Engagement = 0.0D;
+    private BigDecimal resteAPayer_Engagement = BigDecimal.ZERO;
 
-    private double resteAPayer_RAP = 0.0D;
+    private BigDecimal resteAPayer_RAP = BigDecimal.ZERO;
 
-    private double payementN1_RB = 0.0D;
+    private BigDecimal payementN1_RB = BigDecimal.ZERO;
 
-    private double totalpaiement_RB = 0.0D;
+    private BigDecimal totalpaiement_RB = BigDecimal.ZERO;
 
-    private double payementRAPN1 = 0.0D;
+    private BigDecimal payementRAPN1 = BigDecimal.ZERO;
 
-    private double resteAPayer_RB = 0.0D;
+    private BigDecimal resteAPayer_RB = BigDecimal.ZERO;
 
     private String RubriqueBudgetaire = null;
 
@@ -48,7 +49,7 @@ public class ValiderPaiement extends BaseDocumentExtension {
             String anneeBudgetaire = (String) getWorkflowInstance().getValue("AnneeBudgetaire");
             this.engagementInstance = (IWorkflowInstance) getWorkflowInstance().getValue("ENGAGEMENT_INSTANCE");
             this.rapInstance = (IWorkflowInstance) getWorkflowInstance().getValue("RAP_INSTANCE");
-            this.montantPaiement = ((Number) getWorkflowInstance().getValue("MontantAPayer")).doubleValue();
+            this.montantPaiement = (BigDecimal) getWorkflowInstance().getValue("MontantAPayer");
             IWorkflowInstance workflowInstance = null;
             Collection<ILinkedResource> linkedResources = null;
             if (action.getName().equals("Accepter")) {
@@ -62,8 +63,8 @@ public class ValiderPaiement extends BaseDocumentExtension {
                     linkedResources = (Collection<ILinkedResource>) workflowInstance.getLinkedResources("RB_Budget_Tab");
                     if (this.engagementInstance != null) {
                         this.RubriqueBudgetaire = (String) this.engagementInstance.getValue("RubriqueBudgetaire");
-                        this.montantPaye_Engagement = ((Number) this.engagementInstance.getValue("MontantPaye")).doubleValue();
-                        this.resteAPayer_Engagement = ((Number) this.engagementInstance.getValue("ResteAPayer")).doubleValue();
+                        this.montantPaye_Engagement = (BigDecimal) this.engagementInstance.getValue("MontantPaye");
+                        this.resteAPayer_Engagement = (BigDecimal) this.engagementInstance.getValue("ResteAPayer");
                         if (this.RubriqueBudgetaire != null) {
                             ILinkedResource iLinkedResource = linkedResources.stream()
                                     .filter(obj -> ((IStorageResource)obj.getValue("RubriqueBudgetaire")).getValue("RubriqueBudgetaire").equals(this.RubriqueBudgetaire))
@@ -73,36 +74,37 @@ public class ValiderPaiement extends BaseDocumentExtension {
                                 getResourceController().alert(getWorkflowModule().getStaticString("LG_RB_NOT_FOUND"));
                                 return false;
                             }
-                            if (this.resteAPayer_Engagement < this.montantPaiement) {
+                            if (this.resteAPayer_Engagement.compareTo(this.montantPaiement) < 0) {
                                 getResourceController().alert("Le montant de paiement est supérieur a le reste a payé de l'engagement");
                                 return false;
                             }
-                                this.payementN1_RB = iLinkedResource.getValue("Paiement_N1") != null ? ((Number) iLinkedResource.getValue("Paiement_N1")).doubleValue() : 0;
-                                this.resteAPayer_RB = iLinkedResource.getValue("RAP_CURRENT") != null ? ((Number) iLinkedResource.getValue("RAP_CURRENT")).doubleValue() : 0.0D;
-                                this.totalpaiement_RB = iLinkedResource.getValue("TotalDesPaiements") != null ? ((Number) iLinkedResource.getValue("TotalDesPaiements")).doubleValue() : 0.0D;
-                                iLinkedResource.setValue("Paiement_N1", this.payementN1_RB + this.montantPaiement);
-                                iLinkedResource.setValue("TotalDesPaiements", this.totalpaiement_RB + montantPaiement);
-                                iLinkedResource.setValue("RAP_CURRENT", this.resteAPayer_RB - this.montantPaiement);
+                                this.payementN1_RB = iLinkedResource.getValue("Paiement_N1") != null ? (BigDecimal) iLinkedResource.getValue("Paiement_N1") : BigDecimal.ZERO;
+                                this.resteAPayer_RB = iLinkedResource.getValue("RAP_CURRENT") != null ? (BigDecimal) iLinkedResource.getValue("RAP_CURRENT") : BigDecimal.ZERO;
+                                this.totalpaiement_RB = iLinkedResource.getValue("TotalDesPaiements") != null ? (BigDecimal) iLinkedResource.getValue("TotalDesPaiements"): BigDecimal.ZERO;
+                                BigDecimal paiementn1 , totalpaiements , rap_current;
+                                paiementn1 = this.payementN1_RB.add(this.montantPaiement);
+                                totalpaiements = this.totalpaiement_RB.add(this.montantPaiement);
+                                rap_current = this.resteAPayer_RB.subtract(this.montantPaiement);
+                                iLinkedResource.setValue("Paiement_N1", paiementn1);
+                                iLinkedResource.setValue("TotalDesPaiements", totalpaiements);
+                                iLinkedResource.setValue("RAP_CURRENT", rap_current);
                                 iLinkedResource.save(sysAdminContext);
                                 iLinkedResource.getParentInstance().save(sysAdminContext);
                         }
-                        this.engagementInstance.setValue("MontantPaye", this.montantPaye_Engagement + this.montantPaiement);
-                        this.engagementInstance.setValue("ResteAPayer", this.resteAPayer_Engagement - this.montantPaiement);
-                        //this.engagementInstance.addLinkedWorkflowInstance("TotalDesPaiements", getWorkflowInstance());
+                        this.engagementInstance.setValue("MontantPaye", this.montantPaye_Engagement.add(this.montantPaiement));
+                        this.engagementInstance.setValue("ResteAPayer", this.resteAPayer_Engagement.subtract(this.montantPaiement));
                         this.engagementInstance.save(sysAdminContext);
-
                         String compte = (String) getWorkflowInstance().getValue("Compte");
                         IStorageResource compteRef = getCompte(compte);
                         IResourceDefinition iResourceDefinition = DataUniversService.getResourceDefinition("ReferentielsBudget", "CompteTresorerie");
                         if(compteRef == null){
                             compteRef = getWorkflowModule().createStorageResource(this.sysAdminContext, iResourceDefinition, null);
                         }
-                        double solde = compteRef.getValue("Solde") !=null ? ((Number)compteRef.getValue("Solde")).doubleValue() : 0.0D;
-                        solde-=this.montantPaiement;
+                        BigDecimal solde = compteRef.getValue("Solde") !=null ? (BigDecimal)compteRef.getValue("Solde") : BigDecimal.ZERO;
+                        solde = solde.subtract(this.montantPaiement);
                         compteRef.setValue("sys_Title" , compte);
                         compteRef.setValue("Solde" , solde);
                         compteRef.save(this.sysAdminContext);
-
                         IResourceDefinition tresorieDefinition = DataUniversService.getResourceDefinition("ReferentielsBudget" , "Tresorie");
                         IStorageResource Tresorerie = getWorkflowModule().createStorageResource(this.sysAdminContext, tresorieDefinition, null);
                         Tresorerie.setValue("AnneeBudgetaire",anneeBudgetaire);
@@ -125,8 +127,8 @@ public class ValiderPaiement extends BaseDocumentExtension {
                     }
                     if (this.rapInstance != null) {
                         this.RubriqueBudgetaire = (String) this.rapInstance.getValue("RubriqueBudgetaire");
-                        this.montantPaye_RAP = this.rapInstance.getValue("MontantPaye") !=null ? ((Number) this.rapInstance.getValue("MontantPaye")).doubleValue() : 0.0D;
-                        this.resteAPayer_RAP = ((Number) this.rapInstance.getValue("ResteAPayer")).doubleValue();
+                        this.montantPaye_RAP = this.rapInstance.getValue("MontantPaye") !=null ? (BigDecimal) this.rapInstance.getValue("MontantPaye"): BigDecimal.ZERO;
+                        this.resteAPayer_RAP = (BigDecimal) this.rapInstance.getValue("ResteAPayer");
                         if(this.RubriqueBudgetaire==null){
                             getResourceController().alert(getWorkflowModule().getStaticString("LG_RB_NOT_FOUND"));
                             return false;
@@ -139,30 +141,30 @@ public class ValiderPaiement extends BaseDocumentExtension {
                             getResourceController().alert(getWorkflowModule().getStaticString("LG_RB_NOT_FOUND"));
                             return false;
                         }
-                        if (this.resteAPayer_RAP < this.montantPaiement) {
+                        if (this.resteAPayer_RAP.compareTo(this.montantPaiement) < 0) {
                             getResourceController().alert("Le montant de paiement est supérieur a le reste a payé");
                             return false;
                         }
-                        this.payementRAPN1 = iLinkedResource.getValue("Paiement_RAP_N1") != null ? ((Number) iLinkedResource.getValue("Paiement_RAP_N1")).doubleValue() : 0;
-                        this.resteAPayer_RB = iLinkedResource.getValue("RAP_CURRENT") != null ? ((Number) iLinkedResource.getValue("RAP_CURRENT")).doubleValue() : 0.0D;
-                        this.totalpaiement_RB = iLinkedResource.getValue("TotalDesPaiements") != null ? ((Number) iLinkedResource.getValue("TotalDesPaiements")).doubleValue() : 0.0D;
-                        iLinkedResource.setValue("Paiement_RAP_N1", this.payementRAPN1 + this.montantPaiement);
-                        iLinkedResource.setValue("TotalDesPaiements", this.totalpaiement_RB + this.montantPaiement);
-                        iLinkedResource.setValue("RAP_CURRENT", this.resteAPayer_RB -  this.montantPaiement);
+                        this.payementRAPN1 = iLinkedResource.getValue("Paiement_RAP_N1") != null ? (BigDecimal) iLinkedResource.getValue("Paiement_RAP_N1") : BigDecimal.ZERO;
+                        this.resteAPayer_RB = iLinkedResource.getValue("RAP_CURRENT") != null ? (BigDecimal) iLinkedResource.getValue("RAP_CURRENT") : BigDecimal.ZERO;
+                        this.totalpaiement_RB = iLinkedResource.getValue("TotalDesPaiements") != null ? (BigDecimal) iLinkedResource.getValue("TotalDesPaiements") : BigDecimal.ZERO;
+                        iLinkedResource.setValue("Paiement_RAP_N1", this.payementRAPN1.add(this.montantPaiement));
+                        iLinkedResource.setValue("TotalDesPaiements", this.totalpaiement_RB.add(this.montantPaiement));
+                        iLinkedResource.setValue("RAP_CURRENT", this.resteAPayer_RB.subtract(this.montantPaiement));
                         iLinkedResource.save(sysAdminContext);
                         iLinkedResource.getParentInstance().save(sysAdminContext);
-                        this.rapInstance.setValue("MontantPaye", this.montantPaye_RAP + this.montantPaiement);
-                        this.rapInstance.setValue("ResteAPayer", resteAPayer_RAP - this.montantPaiement);
+                        this.rapInstance.setValue("MontantPaye", this.montantPaye_RAP.add(this.montantPaiement));
+                        this.rapInstance.setValue("ResteAPayer", this.resteAPayer_RAP.subtract(this.montantPaiement));
                         this.rapInstance.save(sysAdminContext);
-
                         String compte = (String) getWorkflowInstance().getValue("Compte");
                         IStorageResource compteRef = getCompte(compte);
                         IResourceDefinition iResourceDefinition = DataUniversService.getResourceDefinition("ReferentielsBudget", "CompteTresorerie");
                         if(compteRef == null){
                             compteRef = getWorkflowModule().createStorageResource(this.sysAdminContext, iResourceDefinition, null);
                         }
-                        double solde = compteRef.getValue("Solde") !=null ? ((Number)compteRef.getValue("Solde")).doubleValue() : 0.0D;
-                        solde-=this.montantPaiement;
+                        BigDecimal solde = compteRef.getValue("Solde") !=null ? (BigDecimal)compteRef.getValue("Solde") : BigDecimal.ZERO;
+                        solde = solde.subtract(this.montantPaiement);
+                        //solde-=this.montantPaiement;
                         compteRef.setValue("sys_Title" , compte);
                         compteRef.setValue("Solde" , solde);
                         compteRef.save(this.sysAdminContext);
