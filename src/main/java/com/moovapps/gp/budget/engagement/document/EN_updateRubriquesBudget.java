@@ -9,6 +9,8 @@ import com.moovapps.gp.services.WorkflowsService;
 import java.math.BigDecimal;
 import java.util.Collection;
 
+import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+
 public class EN_updateRubriquesBudget extends BaseDocumentExtension {
     private static final long serialVersionUID = 1L;
 
@@ -48,9 +50,9 @@ public class EN_updateRubriquesBudget extends BaseDocumentExtension {
                 this.anneeBudgetaire = (String) getWorkflowInstance().getValue("AnneeBudgetaire");
                 this.sto_natureBudget = (IStorageResource) getWorkflowInstance().getValue("NatureBudget");
                 this.RubriqueBudgetaire = (String) getWorkflowInstance().getValue("RubriqueBudgetaire");
-                this.montantEngager = (BigDecimal) getWorkflowInstance().getValue("MontantAImputer");
-                this.montantPaye = getWorkflowInstance().getValue("MontantPaye") !=null ? (BigDecimal) getWorkflowInstance().getValue("MontantPaye") : BigDecimal.ZERO;
-                this.totalmontantAnnule = getWorkflowInstance().getValue("MontantTotalAnnule") != null ? (BigDecimal) getWorkflowInstance().getValue("MontantTotalAnnule") : BigDecimal.ZERO;
+                this.montantEngager = castToBigDecimal(getWorkflowInstance().getValue("MontantAImputer"));
+                this.montantPaye = getWorkflowInstance().getValue("MontantPaye") !=null ? castToBigDecimal(getWorkflowInstance().getValue("MontantPaye")) : BigDecimal.ZERO;
+                this.totalmontantAnnule = getWorkflowInstance().getValue("MontantTotalAnnule") != null ? castToBigDecimal(getWorkflowInstance().getValue("MontantTotalAnnule")) : BigDecimal.ZERO;
                 Collection<ILinkedResource> linkedResources = getRubriqueBudgetByCurrentBudget();
                 if (linkedResources == null || linkedResources.isEmpty()) {
                     getResourceController().alert(getWorkflowModule().getStaticString("LG_BUDGET_NOT_OPENED"));
@@ -66,14 +68,14 @@ public class EN_updateRubriquesBudget extends BaseDocumentExtension {
                     return false;
                 }
 
-                if (iLinkedResource.getValue("Disponible") != null && montantEngager.compareTo((BigDecimal) iLinkedResource.getValue("Disponible")) > 0) {
+                if (iLinkedResource.getValue("Disponible") != null && montantEngager.compareTo(castToBigDecimal(iLinkedResource.getValue("Disponible"))) > 0) {
                     getResourceController().alert(getWorkflowModule().getStaticString("LG_DISPO_LOWER"));
                     return false;
                 }
-                this.creditsouvertsCP = (BigDecimal) iLinkedResource.getValue("CreditsOuvertsCP");
-                this.totalengagement_RB = iLinkedResource.getValue("TotalDesEngagements") != null ? (BigDecimal) iLinkedResource.getValue("TotalDesEngagements"): BigDecimal.ZERO;
-                this.resteAPayer_RB = iLinkedResource.getValue("RAP_CURRENT") != null ? (BigDecimal) iLinkedResource.getValue("RAP_CURRENT") : BigDecimal.ZERO;
-                BigDecimal totalAnnule_RB =  iLinkedResource.getValue("TotalAnnulationDiminution") != null ? (BigDecimal) iLinkedResource.getValue("TotalAnnulationDiminution") : BigDecimal.ZERO;
+                this.creditsouvertsCP = castToBigDecimal(iLinkedResource.getValue("CreditsOuvertsCP"));
+                this.totalengagement_RB = iLinkedResource.getValue("TotalDesEngagements") != null ? castToBigDecimal(iLinkedResource.getValue("TotalDesEngagements")) : BigDecimal.ZERO;
+                this.resteAPayer_RB = iLinkedResource.getValue("RAP_CURRENT") != null ? castToBigDecimal(iLinkedResource.getValue("RAP_CURRENT")) : BigDecimal.ZERO;
+                BigDecimal totalAnnule_RB =  iLinkedResource.getValue("TotalAnnulationDiminution") != null ? castToBigDecimal(iLinkedResource.getValue("TotalAnnulationDiminution")) : BigDecimal.ZERO;
                 this.disponible = this.creditsouvertsCP.subtract(this.totalengagement_RB.add(this.montantEngager)).add(totalAnnule_RB);
                 iLinkedResource.setValue("TotalDesEngagements", this.totalengagement_RB.add(this.montantEngager));
                 iLinkedResource.setValue("Disponible", this.disponible);

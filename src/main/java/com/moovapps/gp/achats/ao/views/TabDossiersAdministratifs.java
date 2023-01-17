@@ -207,12 +207,12 @@ public class TabDossiersAdministratifs extends BaseViewExtension {
             } else if (CtlNumber.class.equals(object.getClass())) {
                 CtlNumber number = (CtlNumber)object;
                 iLinkedResource = (IStorageResource)number.getParam();
-                iLinkedResource.setValue(number.getSysname(), number.getFloatValue());
+                iLinkedResource.setValue(number.getSysname(), number.getNumberValue());
                 iLinkedResource.save(TabDossiersAdministratifs.this.sysAdminContext);
             } else if (CtlCheckBox.class.equals(object.getClass())) {
                 CtlCheckBox checkBox = (CtlCheckBox)object;
                 iLinkedResource = (IStorageResource)checkBox.getParam();
-                iLinkedResource.setValue(checkBox.getSysname(), Boolean.valueOf(checkBox.isChecked()));
+                iLinkedResource.setValue(checkBox.getSysname(), checkBox.isChecked());
                 iLinkedResource.save(TabDossiersAdministratifs.this.sysAdminContext);
             } else if (CtlComboBox.class.equals(object.getClass())) {
                 CtlComboBox box = (CtlComboBox)object;

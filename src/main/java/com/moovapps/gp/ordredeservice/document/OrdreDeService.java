@@ -50,7 +50,7 @@ public class OrdreDeService extends BaseDocumentExtension {
                         IWorkflowInstance marche = getMarcheFromReference(referenceDuMarche);
                         marche.addLinkedWorkflowInstance("OrdresDeService", getWorkflowInstance());
                         marche.save(getWorkflowModule().getSysadminContext());
-                        getWorkflowInstance().setValue("ParenteInstance_MARCHE", Boolean.valueOf(true));
+                        getWorkflowInstance().setValue("ParenteInstance_MARCHE", Boolean.TRUE);
                     }
         } catch (Exception e) {
             getResourceController().alert("Un problèùe est survenu, veuillez contacter votre administrateur");

@@ -39,10 +39,15 @@ import com.axemble.vdp.ui.framework.widgets.list.Option;
 import com.axemble.vdp.utils.parameters.TempUploadFile;
 import com.moovapps.gp.services.DataUniversService;
 import com.moovapps.gp.services.DirectoryService;
+import org.apache.ecs.wml.Big;
+
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+
+import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
 
 public class BordereauDesPrix extends BaseViewExtension {
     protected IContext sysAdminContext = DirectoryService.getSysAdminContext();
@@ -59,21 +64,21 @@ public class BordereauDesPrix extends BaseViewExtension {
 
     protected Object valeur = null;
 
-    private Float quantite = Float.valueOf(0.0F);
+    private BigDecimal quantite = BigDecimal.ZERO;
 
-    private Double prixUnitaire = new Double(0.0D);
+    private BigDecimal prixUnitaire = BigDecimal.ZERO;
 
-    private Float tva = Float.valueOf(0.0F);
+    private BigDecimal tva = BigDecimal.ZERO;
 
-    private Double prixTotalHT = new Double(0.0D);
+    private BigDecimal prixTotalHT = BigDecimal.ZERO;
 
-    private Double prixTotalTTC = new Double(0.0D);
+    private BigDecimal prixTotalTTC = BigDecimal.ZERO;
 
-    private Float totalTVA = Float.valueOf(0.0F);
+    private BigDecimal totalTVA = BigDecimal.ZERO;
 
-    private Double totalHT = new Double(0.0D);
+    private BigDecimal totalHT = BigDecimal.ZERO;
 
-    private Double totalTTC = new Double(0.0D);
+    private BigDecimal totalTTC = BigDecimal.ZERO;
 
     public void onPrepareColumns(List list) {
         try {
@@ -236,11 +241,11 @@ public class BordereauDesPrix extends BaseViewExtension {
                 iLinkedResource.setValue(txtBox.getSysname(), txtBox.getLabel());
                 iLinkedResource.save(BordereauDesPrix.this.sysAdminContext);
             } else if (CtlNumber.class.equals(object.getClass())) {
-                BordereauDesPrix.this.quantite = Float.valueOf(0.0F);
-                BordereauDesPrix.this.prixUnitaire = new Double(0.0D);
-                BordereauDesPrix.this.tva = Float.valueOf(0.0F);
-                BordereauDesPrix.this.prixTotalHT = new Double(0.0D);
-                BordereauDesPrix.this.prixTotalTTC = new Double(0.0D);
+                BordereauDesPrix.this.quantite = BigDecimal.ZERO;
+                BordereauDesPrix.this.prixUnitaire = BigDecimal.ZERO;
+                BordereauDesPrix.this.tva = BigDecimal.ZERO;
+                BordereauDesPrix.this.prixTotalHT = BigDecimal.ZERO;
+                BordereauDesPrix.this.prixTotalTTC = BigDecimal.ZERO;
                 CtlNumber number = (CtlNumber)object;
                 iLinkedResource = (ILinkedResource)number.getParam();
                 if (number.getSysname().equals("TVA")) {
@@ -252,13 +257,13 @@ public class BordereauDesPrix extends BaseViewExtension {
                     iLinkedResource.setValue(number.getSysname(), number.getDoubleValue());
                 }
                 if (iLinkedResource.getValue("Quantite") != null)
-                    BordereauDesPrix.this.quantite = (Float)iLinkedResource.getValue("Quantite");
+                    BordereauDesPrix.this.quantite = castToBigDecimal(iLinkedResource.getValue("Quantite"));
                 if (iLinkedResource.getValue("PrixUnitaire") != null)
-                    BordereauDesPrix.this.prixUnitaire = (Double)iLinkedResource.getValue("PrixUnitaire");
+                    BordereauDesPrix.this.prixUnitaire = castToBigDecimal(iLinkedResource.getValue("PrixUnitaire"));
                 if (iLinkedResource.getValue("TVA") != null)
-                    BordereauDesPrix.this.tva = (Float)iLinkedResource.getValue("TVA");
-                BordereauDesPrix.this.prixTotalHT = Double.valueOf(BordereauDesPrix.this.quantite.floatValue() * BordereauDesPrix.this.prixUnitaire.doubleValue());
-                BordereauDesPrix.this.prixTotalTTC = Double.valueOf(BordereauDesPrix.this.prixTotalHT.doubleValue() + BordereauDesPrix.this.prixTotalHT.doubleValue() * BordereauDesPrix.this.tva.floatValue() / 100.0D);
+                    BordereauDesPrix.this.tva = castToBigDecimal(iLinkedResource.getValue("TVA"));
+                BordereauDesPrix.this.prixTotalHT = BordereauDesPrix.this.quantite.multiply(BordereauDesPrix.this.prixUnitaire);
+                BordereauDesPrix.this.prixTotalTTC = BordereauDesPrix.this.prixTotalHT.add(BordereauDesPrix.this.prixTotalHT.multiply(BordereauDesPrix.this.tva).divide(BigDecimal.valueOf(100)));
                 iLinkedResource.setValue("PrixTotalHT", BordereauDesPrix.this.prixTotalHT);
                 iLinkedResource.setValue("PrixTotalTTC", BordereauDesPrix.this.prixTotalTTC);
                 iLinkedResource.save(BordereauDesPrix.this.sysAdminContext);
@@ -364,16 +369,16 @@ public class BordereauDesPrix extends BaseViewExtension {
 
     private void calculTotaux(IWorkflowInstance iWorkflowInstancePere) {
         try {
-            this.totalTVA = Float.valueOf(0.0F);
-            this.totalHT = new Double(0.0D);
-            this.totalTTC = new Double(0.0D);
+            this.totalTVA = BigDecimal.ZERO;
+            this.totalHT = BigDecimal.ZERO;
+            this.totalTTC = BigDecimal.ZERO;
             iWorkflowInstancePere = getWorkflowInstance();
             Collection<ILinkedResource> iLinkedResources = (Collection<ILinkedResource>) iWorkflowInstancePere.getLinkedResources("BordereauDePrix_BC_Tab");
             for (ILinkedResource iLinkedResource : iLinkedResources) {
                 if (iLinkedResource.getValue("PrixTotalHT") != null)
-                    this.totalHT = Double.valueOf(this.totalHT.doubleValue() + ((Double)iLinkedResource.getValue("PrixTotalHT")).doubleValue());
+                    this.totalHT = this.totalHT.add(castToBigDecimal(iLinkedResource.getValue("PrixTotalHT")));
                 if (iLinkedResource.getValue("PrixTotalTTC") != null)
-                    this.totalTTC = Double.valueOf(this.totalTTC.doubleValue() + ((Double)iLinkedResource.getValue("PrixTotalTTC")).doubleValue());
+                    this.totalTTC = this.totalTTC.add(castToBigDecimal(iLinkedResource.getValue("PrixTotalTTC")));
             }
             iWorkflowInstancePere.setValue("TotalHT", this.totalHT);
             iWorkflowInstancePere.setValue("TotalTTC", this.totalTTC);

@@ -16,6 +16,8 @@ import org.apache.ecs.html.Col;
 import java.math.BigDecimal;
 import java.util.Collection;
 
+import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+
 public class ValiderOrdreRecette extends BaseDocumentExtension {
     protected IContext sysAdminContext = DirectoryService.getSysAdminContext();
     private BigDecimal TotalRecette_RAP = BigDecimal.ZERO;
@@ -42,20 +44,20 @@ public class ValiderOrdreRecette extends BaseDocumentExtension {
                         getResourceController().alert(getWorkflowModule().getStaticString("LG_RB_NOT_FOUND"));
                         return false;
                     }
-                    this.montantRecette = (BigDecimal) detail.getValue("MontantRecette");
-                    this.TotalRecette_RAP = iLinkedResource.getValue("TotalRecettesDeLAnnee") != null ? (BigDecimal) iLinkedResource.getValue("TotalRecettesDeLAnnee") : BigDecimal.ZERO;
+                    this.montantRecette = castToBigDecimal(detail.getValue("MontantRecette"));
+                    this.TotalRecette_RAP = iLinkedResource.getValue("TotalRecettesDeLAnnee") != null ? castToBigDecimal(iLinkedResource.getValue("TotalRecettesDeLAnnee")) : BigDecimal.ZERO;
                     iLinkedResource.setValue("TotalRecettesDeLAnnee", this.TotalRecette_RAP.add(this.montantRecette));
                     iLinkedResource.save(this.sysAdminContext);
                     iLinkedResource.getParentInstance().save(this.sysAdminContext);
                 }
-                BigDecimal montant = (BigDecimal) getWorkflowInstance().getValue("MontantTotalRecette");
+                BigDecimal montant = castToBigDecimal(getWorkflowInstance().getValue("MontantTotalRecette"));
                 String compte = (String) getWorkflowInstance().getValue("Compte");
                 IStorageResource compteRef = getCompte(compte);
                 IResourceDefinition iResourceDefinition = DataUniversService.getResourceDefinition("ReferentielsBudget", "CompteTresorerie");
                 if(compteRef == null){
                     compteRef = getWorkflowModule().createStorageResource(this.sysAdminContext, iResourceDefinition, null);
                 }
-                BigDecimal solde = compteRef.getValue("Solde") !=null ? (BigDecimal)compteRef.getValue("Solde") : BigDecimal.ZERO;
+                BigDecimal solde = compteRef.getValue("Solde") !=null ? castToBigDecimal(compteRef.getValue("Solde")) : BigDecimal.ZERO;
                 solde = solde.add(montant);
                 compteRef.setValue("sys_Title",compte);
                 compteRef.setValue("Solde",solde);
@@ -69,7 +71,7 @@ public class ValiderOrdreRecette extends BaseDocumentExtension {
                 Tresorerie.setValue("Reference", getWorkflowInstance().getValue(IProperty.System.REFERENCE));
                 Tresorerie.setValue("Tiers", getWorkflowInstance().getValue("Fournisseur"));
                 Tresorerie.setValue("Type", "Recette");
-                Tresorerie.setValue("Montant", (BigDecimal)getWorkflowInstance().getValue("MontantTotalRecette"));
+                Tresorerie.setValue("Montant", castToBigDecimal(getWorkflowInstance().getValue("MontantTotalRecette")));
                 Tresorerie.save(this.sysAdminContext);
             }
         }

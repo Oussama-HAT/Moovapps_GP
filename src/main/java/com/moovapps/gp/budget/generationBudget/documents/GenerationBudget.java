@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
+import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+
 public class GenerationBudget extends BaseDocumentExtension {
     protected IContext sysAdminContext = DirectoryService.getSysAdminContext();
     protected IContext loggedOnContext = null;
@@ -120,9 +122,9 @@ public class GenerationBudget extends BaseDocumentExtension {
             BigDecimal TotalAnnulation =  BigDecimal.ZERO;
             BigDecimal disponible =  BigDecimal.ZERO;
             for (ILinkedResource linkedResourceGB : linkedResourcesGB) {
-                CreditsOuvertsCP = (BigDecimal) linkedResourceGB.getValue("CreditsOuvertsCP");
-                TotalEngagement = (BigDecimal) linkedResourceGB.getValue("TotalDesEngagements");
-                TotalAnnulation = (BigDecimal) linkedResourceGB.getValue("TotalAnnulationDiminution");
+                CreditsOuvertsCP = castToBigDecimal(linkedResourceGB.getValue("CreditsOuvertsCP"));
+                TotalEngagement = castToBigDecimal(linkedResourceGB.getValue("TotalDesEngagements"));
+                TotalAnnulation = castToBigDecimal(linkedResourceGB.getValue("TotalAnnulationDiminution"));
                 disponible = CreditsOuvertsCP.subtract(TotalEngagement).add(TotalAnnulation);
                 linkedResourceGB.setValue("Disponible", disponible);
                 linkedResourceGB.save(this.sysAdminContext);

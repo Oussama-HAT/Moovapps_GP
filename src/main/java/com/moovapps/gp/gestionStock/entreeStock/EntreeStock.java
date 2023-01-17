@@ -2,7 +2,11 @@ package com.moovapps.gp.gestionStock.entreeStock;
 
 import com.axemble.vdoc.sdk.document.extensions.BaseDocumentExtension;
 import com.axemble.vdoc.sdk.interfaces.*;
+
+import java.math.BigDecimal;
 import java.util.Collection;
+
+import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
 
 public class EntreeStock extends BaseDocumentExtension {
 
@@ -11,8 +15,8 @@ public class EntreeStock extends BaseDocumentExtension {
         if(action.getName().equals("Envoyer"))
         {
             IStorageResource articleRef = null;
-            Number qteLivree = null;
-            Number qteStock = null;
+            BigDecimal qteLivree = null;
+            BigDecimal qteStock = null;
             Collection<ILinkedResource> listeArticlesReceptiones =
                     (Collection<ILinkedResource>) getWorkflowInstance().getLinkedResources("ListeDesArticles");
 
@@ -26,11 +30,9 @@ public class EntreeStock extends BaseDocumentExtension {
                     ICatalog catalog = getWorkflowModule().getCatalog(sysContext, "RefAchats", ICatalog.IType.STORAGE, project);
                     IResourceDefinition iResourceDefinition = getWorkflowModule().getResourceDefinition(sysContext, catalog, "JournalDeStock");
                     IStorageResource jounalStock = getWorkflowModule().createStorageResource(sysContext, iResourceDefinition, null);
-
                     articleRef = (IStorageResource) article.getValue("Article");
-                    qteLivree = (Number) article.getValue("QuantLivree");
-                    qteStock = (Number) articleRef.getValue("Qte");
-
+                    qteLivree = castToBigDecimal(article.getValue("QuantLivree"));
+                    qteStock = castToBigDecimal(articleRef.getValue("Qte"));
                     jounalStock.setValue("Article", article.getValue("Article"));
                     jounalStock.setValue("Date", getWorkflowInstance().getValue("DateDeReception"));
                     jounalStock.setValue("Magasin", article.getValue("Magasin"));
@@ -44,29 +46,24 @@ public class EntreeStock extends BaseDocumentExtension {
                     {
                         if(getWorkflowInstance().getValue("Categorie").equals("Entrée"))
                         {
-                            articleRef.setValue("Qte",qteStock.intValue()+qteLivree.intValue());
+                            articleRef.setValue("Qte",qteStock.add(qteLivree));
                         }else
                         {
-                            articleRef.setValue("Qte",qteStock.intValue()-qteLivree.intValue());
+                            articleRef.setValue("Qte",qteStock.subtract(qteLivree));
                         }
 
                     }else
                     {
                         if(getWorkflowInstance().getValue("Categorie").equals("Entrée"))
                         {
-                            articleRef.setValue("Qte",qteLivree.intValue());
+                            articleRef.setValue("Qte",qteLivree);
                         }else
                         {
-                            articleRef.setValue("Qte",-qteLivree.intValue());
+                            articleRef.setValue("Qte",qteLivree.negate());
                         }
-
                     }
-
-
                     articleRef.save(Context);
                     jounalStock.save(Context);
-
-
                 }
                 catch (Exception e)
                 {

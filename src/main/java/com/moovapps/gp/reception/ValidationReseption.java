@@ -3,7 +3,10 @@ package com.moovapps.gp.reception;
 import com.axemble.vdoc.sdk.document.extensions.BaseDocumentExtension;
 import com.axemble.vdoc.sdk.interfaces.*;
 
+import java.math.BigDecimal;
 import java.util.Collection;
+
+import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
 
 public class ValidationReseption extends BaseDocumentExtension {
 
@@ -21,8 +24,8 @@ public class ValidationReseption extends BaseDocumentExtension {
 
     private void addArticleToStock(ILinkedResource article)
     {
-        Number qteLivree = null;
-        Number qteStock = null;
+        BigDecimal qteLivree = null;
+        BigDecimal qteStock = null;
         IStorageResource articleRef = null;
         if(article.getValue("Stockable").equals("Géré en stock"))
         {
@@ -36,8 +39,8 @@ public class ValidationReseption extends BaseDocumentExtension {
                 IStorageResource jounalStock = getWorkflowModule().createStorageResource(Context, iResourceDefinition, null);
 
                 articleRef = (IStorageResource) article.getValue("Article");
-                qteLivree = (Number) article.getValue("QuantiteLivree");
-                qteStock = (Number) articleRef.getValue("Qte");
+                qteLivree = castToBigDecimal(article.getValue("QuantiteLivree"));
+                qteStock = castToBigDecimal(articleRef.getValue("Qte"));
 
                 jounalStock.setValue("Article", article.getValue("Article"));
                 jounalStock.setValue("Date", getWorkflowInstance().getValue("DateDeReception"));
@@ -49,10 +52,10 @@ public class ValidationReseption extends BaseDocumentExtension {
 
                 if(qteStock!=null)
                 {
-                    articleRef.setValue("Qte",qteStock.intValue()+qteLivree.intValue());
+                    articleRef.setValue("Qte",qteStock.add(qteLivree));
                 }else
                 {
-                    articleRef.setValue("Qte",qteLivree.intValue());
+                    articleRef.setValue("Qte",qteLivree);
                 }
 
                 articleRef.save(Context);

@@ -36,11 +36,15 @@ import com.axemble.vdp.ui.framework.widgets.INamedWidget;
 import com.axemble.vdp.ui.framework.widgets.list.Option;
 import com.axemble.vdp.utils.parameters.TempUploadFile;
 import com.moovapps.gp.services.DirectoryService;
+
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+
+import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
 
 public class TabEvaluationTechnique extends BaseViewExtension {
     protected IContext sysAdminContext = DirectoryService.getSysAdminContext();
@@ -110,8 +114,8 @@ public class TabEvaluationTechnique extends BaseViewExtension {
         this.valeur = linkedResource.getValue(name);
         if (this.valeur != null)
             ctlNumber.setLabel(String.valueOf(this.valeur));
-        ctlNumber.setMin(Integer.valueOf(0));
-        ctlNumber.setMax((Number)linkedResource.getValue("Bareme"));
+        ctlNumber.setMin(BigDecimal.ZERO);
+        ctlNumber.setMax(castToBigDecimal(linkedResource.getValue("Bareme")));
         ctlNumber.addChangeListener(this.listener);
         return ctlNumber;
     }
@@ -217,13 +221,13 @@ public class TabEvaluationTechnique extends BaseViewExtension {
             } else if (CtlNumber.class.equals(object.getClass())) {
                 CtlNumber number = (CtlNumber)object;
                 iLinkedResource = (ILinkedResource)number.getParam();
-                iLinkedResource.setValue(number.getSysname(), number.getFloatValue());
+                iLinkedResource.setValue(number.getSysname(), number.getNumberValue());
                 iLinkedResource.save(TabEvaluationTechnique.this.sysAdminContext);
                 TabEvaluationTechnique.this.MAJDecisionSousCommissionTechnique();
             } else if (CtlCheckBox.class.equals(object.getClass())) {
                 CtlCheckBox checkBox = (CtlCheckBox)object;
                 iLinkedResource = (ILinkedResource)checkBox.getParam();
-                iLinkedResource.setValue(checkBox.getSysname(), Boolean.valueOf(checkBox.isChecked()));
+                iLinkedResource.setValue(checkBox.getSysname(), checkBox.isChecked());
                 iLinkedResource.save(TabEvaluationTechnique.this.sysAdminContext);
             } else if (CtlComboBox.class.equals(object.getClass())) {
                 CtlComboBox box = (CtlComboBox)object;

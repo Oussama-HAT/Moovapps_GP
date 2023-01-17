@@ -6,7 +6,10 @@ import com.axemble.vdoc.sdk.exceptions.ProjectModuleException;
 import com.axemble.vdoc.sdk.exceptions.WorkflowModuleException;
 import com.axemble.vdoc.sdk.interfaces.*;
 
+import java.math.BigDecimal;
 import java.util.Collection;
+
+import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
 
 public class ValidationDirecteur extends BaseDocumentExtension {
     @Override
@@ -15,9 +18,9 @@ public class ValidationDirecteur extends BaseDocumentExtension {
         return super.onAfterLoad();
     }
 
-    private float getBudgetDispo()
+    private BigDecimal getBudgetDispo()
     {
-        float budgetDispo = 0;
+        BigDecimal budgetDispo = BigDecimal.ZERO;
         IContext sysContext = getWorkflowModule().getSysadminContext();
         IOrganization organization;
         IProject project;
@@ -38,7 +41,7 @@ public class ValidationDirecteur extends BaseDocumentExtension {
                 {
                     if(budget.getValue("Disponible")!=null)
                     {
-                        budgetDispo+= ((Number)budget.getValue("Disponible")).floatValue();
+                        budgetDispo = budgetDispo.add(castToBigDecimal(budget.getValue("Disponible")));
                     }
                 }
 

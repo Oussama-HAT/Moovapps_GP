@@ -11,6 +11,8 @@ import com.moovapps.gp.services.DirectoryService;
 import java.math.BigDecimal;
 import java.util.Collection;
 
+import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+
 public class ValiderPaiement extends BaseDocumentExtension {
     private static final long serialVersionUID = 1L;
 
@@ -49,7 +51,7 @@ public class ValiderPaiement extends BaseDocumentExtension {
             String anneeBudgetaire = (String) getWorkflowInstance().getValue("AnneeBudgetaire");
             this.engagementInstance = (IWorkflowInstance) getWorkflowInstance().getValue("ENGAGEMENT_INSTANCE");
             this.rapInstance = (IWorkflowInstance) getWorkflowInstance().getValue("RAP_INSTANCE");
-            this.montantPaiement = (BigDecimal) getWorkflowInstance().getValue("MontantAPayer");
+            this.montantPaiement = castToBigDecimal(getWorkflowInstance().getValue("MontantAPayer"));
             IWorkflowInstance workflowInstance = null;
             Collection<ILinkedResource> linkedResources = null;
             if (action.getName().equals("Accepter")) {
@@ -63,8 +65,8 @@ public class ValiderPaiement extends BaseDocumentExtension {
                     linkedResources = (Collection<ILinkedResource>) workflowInstance.getLinkedResources("RB_Budget_Tab");
                     if (this.engagementInstance != null) {
                         this.RubriqueBudgetaire = (String) this.engagementInstance.getValue("RubriqueBudgetaire");
-                        this.montantPaye_Engagement = (BigDecimal) this.engagementInstance.getValue("MontantPaye");
-                        this.resteAPayer_Engagement = (BigDecimal) this.engagementInstance.getValue("ResteAPayer");
+                        this.montantPaye_Engagement = castToBigDecimal(this.engagementInstance.getValue("MontantPaye"));
+                        this.resteAPayer_Engagement = castToBigDecimal(this.engagementInstance.getValue("ResteAPayer"));
                         if (this.RubriqueBudgetaire != null) {
                             ILinkedResource iLinkedResource = linkedResources.stream()
                                     .filter(obj -> ((IStorageResource)obj.getValue("RubriqueBudgetaire")).getValue("RubriqueBudgetaire").equals(this.RubriqueBudgetaire))
@@ -78,16 +80,12 @@ public class ValiderPaiement extends BaseDocumentExtension {
                                 getResourceController().alert("Le montant de paiement est supérieur a le reste a payé de l'engagement");
                                 return false;
                             }
-                                this.payementN1_RB = iLinkedResource.getValue("Paiement_N1") != null ? (BigDecimal) iLinkedResource.getValue("Paiement_N1") : BigDecimal.ZERO;
-                                this.resteAPayer_RB = iLinkedResource.getValue("RAP_CURRENT") != null ? (BigDecimal) iLinkedResource.getValue("RAP_CURRENT") : BigDecimal.ZERO;
-                                this.totalpaiement_RB = iLinkedResource.getValue("TotalDesPaiements") != null ? (BigDecimal) iLinkedResource.getValue("TotalDesPaiements"): BigDecimal.ZERO;
-                                BigDecimal paiementn1 , totalpaiements , rap_current;
-                                paiementn1 = this.payementN1_RB.add(this.montantPaiement);
-                                totalpaiements = this.totalpaiement_RB.add(this.montantPaiement);
-                                rap_current = this.resteAPayer_RB.subtract(this.montantPaiement);
-                                iLinkedResource.setValue("Paiement_N1", paiementn1);
-                                iLinkedResource.setValue("TotalDesPaiements", totalpaiements);
-                                iLinkedResource.setValue("RAP_CURRENT", rap_current);
+                                this.payementN1_RB = iLinkedResource.getValue("Paiement_N1") != null ? castToBigDecimal(iLinkedResource.getValue("Paiement_N1")) : BigDecimal.ZERO;
+                                this.resteAPayer_RB = iLinkedResource.getValue("RAP_CURRENT") != null ? castToBigDecimal(iLinkedResource.getValue("RAP_CURRENT")) : BigDecimal.ZERO;
+                                this.totalpaiement_RB = iLinkedResource.getValue("TotalDesPaiements") != null ? castToBigDecimal(iLinkedResource.getValue("TotalDesPaiements")): BigDecimal.ZERO;
+                                iLinkedResource.setValue("Paiement_N1", this.payementN1_RB.add(this.montantPaiement));
+                                iLinkedResource.setValue("TotalDesPaiements", this.totalpaiement_RB.add(this.montantPaiement));
+                                iLinkedResource.setValue("RAP_CURRENT", this.resteAPayer_RB.subtract(this.montantPaiement));
                                 iLinkedResource.save(sysAdminContext);
                                 iLinkedResource.getParentInstance().save(sysAdminContext);
                         }
@@ -100,7 +98,7 @@ public class ValiderPaiement extends BaseDocumentExtension {
                         if(compteRef == null){
                             compteRef = getWorkflowModule().createStorageResource(this.sysAdminContext, iResourceDefinition, null);
                         }
-                        BigDecimal solde = compteRef.getValue("Solde") !=null ? (BigDecimal)compteRef.getValue("Solde") : BigDecimal.ZERO;
+                        BigDecimal solde = compteRef.getValue("Solde") !=null ? castToBigDecimal(compteRef.getValue("Solde")) : BigDecimal.ZERO;
                         solde = solde.subtract(this.montantPaiement);
                         compteRef.setValue("sys_Title" , compte);
                         compteRef.setValue("Solde" , solde);
@@ -127,8 +125,8 @@ public class ValiderPaiement extends BaseDocumentExtension {
                     }
                     if (this.rapInstance != null) {
                         this.RubriqueBudgetaire = (String) this.rapInstance.getValue("RubriqueBudgetaire");
-                        this.montantPaye_RAP = this.rapInstance.getValue("MontantPaye") !=null ? (BigDecimal) this.rapInstance.getValue("MontantPaye"): BigDecimal.ZERO;
-                        this.resteAPayer_RAP = (BigDecimal) this.rapInstance.getValue("ResteAPayer");
+                        this.montantPaye_RAP = this.rapInstance.getValue("MontantPaye") !=null ? castToBigDecimal(this.rapInstance.getValue("MontantPaye")): BigDecimal.ZERO;
+                        this.resteAPayer_RAP = castToBigDecimal(this.rapInstance.getValue("ResteAPayer"));
                         if(this.RubriqueBudgetaire==null){
                             getResourceController().alert(getWorkflowModule().getStaticString("LG_RB_NOT_FOUND"));
                             return false;
@@ -145,9 +143,9 @@ public class ValiderPaiement extends BaseDocumentExtension {
                             getResourceController().alert("Le montant de paiement est supérieur a le reste a payé");
                             return false;
                         }
-                        this.payementRAPN1 = iLinkedResource.getValue("Paiement_RAP_N1") != null ? (BigDecimal) iLinkedResource.getValue("Paiement_RAP_N1") : BigDecimal.ZERO;
-                        this.resteAPayer_RB = iLinkedResource.getValue("RAP_CURRENT") != null ? (BigDecimal) iLinkedResource.getValue("RAP_CURRENT") : BigDecimal.ZERO;
-                        this.totalpaiement_RB = iLinkedResource.getValue("TotalDesPaiements") != null ? (BigDecimal) iLinkedResource.getValue("TotalDesPaiements") : BigDecimal.ZERO;
+                        this.payementRAPN1 = iLinkedResource.getValue("Paiement_RAP_N1") != null ? castToBigDecimal(iLinkedResource.getValue("Paiement_RAP_N1")) : BigDecimal.ZERO;
+                        this.resteAPayer_RB = iLinkedResource.getValue("RAP_CURRENT") != null ? castToBigDecimal(iLinkedResource.getValue("RAP_CURRENT")) : BigDecimal.ZERO;
+                        this.totalpaiement_RB = iLinkedResource.getValue("TotalDesPaiements") != null ? castToBigDecimal(iLinkedResource.getValue("TotalDesPaiements")) : BigDecimal.ZERO;
                         iLinkedResource.setValue("Paiement_RAP_N1", this.payementRAPN1.add(this.montantPaiement));
                         iLinkedResource.setValue("TotalDesPaiements", this.totalpaiement_RB.add(this.montantPaiement));
                         iLinkedResource.setValue("RAP_CURRENT", this.resteAPayer_RB.subtract(this.montantPaiement));
@@ -162,7 +160,7 @@ public class ValiderPaiement extends BaseDocumentExtension {
                         if(compteRef == null){
                             compteRef = getWorkflowModule().createStorageResource(this.sysAdminContext, iResourceDefinition, null);
                         }
-                        BigDecimal solde = compteRef.getValue("Solde") !=null ? (BigDecimal)compteRef.getValue("Solde") : BigDecimal.ZERO;
+                        BigDecimal solde = compteRef.getValue("Solde") !=null ? castToBigDecimal(compteRef.getValue("Solde")) : BigDecimal.ZERO;
                         solde = solde.subtract(this.montantPaiement);
                         //solde-=this.montantPaiement;
                         compteRef.setValue("sys_Title" , compte);

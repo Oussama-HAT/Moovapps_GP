@@ -3,18 +3,22 @@ package com.moovapps.gp.achats.bc.documents;
 import com.axemble.vdoc.sdk.document.extensions.BaseDocumentExtension;
 import com.axemble.vdoc.sdk.interfaces.IAction;
 
+import java.math.BigDecimal;
+
+import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+
 public class Imputation extends BaseDocumentExtension {
 
     @Override
     public boolean onBeforeSubmit(IAction action) {
         if(action.getName().equals("Valider"))
         {
-            Number totalImpute = (Number) getWorkflowInstance().getValue("TotalImpute");
-            Number totalTTC = (Number) getWorkflowInstance().getValue("TotalTTC");
+            BigDecimal totalImpute = castToBigDecimal(getWorkflowInstance().getValue("TotalImpute"));
+            BigDecimal totalTTC = castToBigDecimal(getWorkflowInstance().getValue("TotalTTC"));
 
             if(totalImpute!=null && totalTTC!=null)
             {
-                if(totalImpute.intValue()<totalTTC.intValue()||totalImpute.intValue()>totalTTC.intValue())
+                if(totalImpute.compareTo(totalTTC) != 0)
                 {
                     getResourceController().alert("Montant imputé doit être égal au total TTC");
                     return false;

@@ -6,8 +6,13 @@ import com.axemble.vdoc.sdk.interfaces.IOptionList;
 import com.axemble.vdoc.sdk.interfaces.IProperty;
 import com.axemble.vdoc.sdk.interfaces.IResource;
 import com.axemble.vdoc.sdk.interfaces.IWorkflowInstance;
+
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
+
+import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+
 public class EtablissementFicheMarche extends BaseDocumentExtension {
     private static final long serialVersionUID = 8760885001689442102L;
 
@@ -64,7 +69,7 @@ public class EtablissementFicheMarche extends BaseDocumentExtension {
             for (IWorkflowInstance iWorkflowInstance : iWorkflowInstances) {
                 if (this.nomDuLot.equals(iWorkflowInstance.getValue("Lot")) && iWorkflowInstance.getValue("DecisionDeLaCommissionAdjudication").equals("Adjudicataire")) {
                     getWorkflowInstance().setValue("Candidat", iWorkflowInstance.getValue("Candidat"));
-                    getWorkflowInstance().setValue("TotalTTC", iWorkflowInstance.getValue("MontantDeLActeDEngagement"));
+                    getWorkflowInstance().setValue("TotalTTC", castToBigDecimal(iWorkflowInstance.getValue("MontantDeLActeDEngagement")));
                     break;
                 }
             }
@@ -94,7 +99,7 @@ public class EtablissementFicheMarche extends BaseDocumentExtension {
             for (ILinkedResource iLinkedResource : iLinkedResources) {
                 if (this.nomDuLot.equals(iLinkedResource.getValue("Code") + " - " + iLinkedResource.getValue("Intitule"))) {
                     if (iLinkedResource.getValue("DelaiDExecution") != null && iLinkedResource.getValue("Execution") != null) {
-                        getWorkflowInstance().setValue("DelaiDExecutionGlobal", iLinkedResource.getValue("DelaiDExecution"));
+                        getWorkflowInstance().setValue("DelaiDExecutionGlobal", castToBigDecimal(iLinkedResource.getValue("DelaiDExecution")));
                         getWorkflowInstance().setValue("Delai", iLinkedResource.getValue("Execution"));
                     }
                     if (iLinkedResource.getValue("DelaiDeGarantie") != null && iLinkedResource.getValue("Garantie") != null) {

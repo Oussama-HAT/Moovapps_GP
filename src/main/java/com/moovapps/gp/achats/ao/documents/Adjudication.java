@@ -5,6 +5,7 @@ import com.axemble.vdoc.sdk.interfaces.IAction;
 import com.axemble.vdoc.sdk.interfaces.IContext;
 import com.axemble.vdoc.sdk.interfaces.ILinkedResource;
 import com.axemble.vdoc.sdk.interfaces.IWorkflowInstance;
+import com.axemble.vdp.utils.CollectionUtils;
 import com.moovapps.gp.services.DirectoryService;
 import com.moovapps.gp.services.WorkflowsService;
 import java.util.Collection;
@@ -17,9 +18,10 @@ public class Adjudication extends BaseDocumentExtension {
     public boolean onBeforeSubmit(IAction action) {
         try {
             if (action.getName().equals("Valider10")) {
+
                 this.loggedOnUserContext = getWorkflowModule().getLoggedOnUserContext();
-                Collection<ILinkedResource> linkedResourcesLots = (Collection<ILinkedResource>) getWorkflowInstance().getLinkedResources("Lots_AO_Tab");
-                Collection<IWorkflowInstance> linkedWorkflowInstancesDepots = (Collection<IWorkflowInstance>) getWorkflowInstance().getLinkedWorkflowInstances("DepotDossiers_SP");
+                Collection<ILinkedResource> linkedResourcesLots = CollectionUtils.cast(getWorkflowInstance().getLinkedResources("Lots_AO_Tab") , ILinkedResource.class);
+                Collection<IWorkflowInstance> linkedWorkflowInstancesDepots = CollectionUtils.cast(getWorkflowInstance().getLinkedResources("DepotDossiers_SP") , IWorkflowInstance.class);
                 String lotDepot = null, adjudicataire = null, lot = null;
                 int adjudicataires = 0;
                 for (ILinkedResource linkedResourceLot : linkedResourcesLots) {

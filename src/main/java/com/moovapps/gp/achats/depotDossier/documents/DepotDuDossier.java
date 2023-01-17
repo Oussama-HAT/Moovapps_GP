@@ -28,7 +28,7 @@ public class DepotDuDossier extends BaseDocumentExtension {
                     for (ILinkedResource linkedResourceLot : linkedResourcesLots) {
                         code = (String)linkedResourceLot.getValue("Code");
                         intitule = (String)linkedResourceLot.getValue("Intitule");
-                        if (lot.equals(String.valueOf(code) + " - " + intitule)) {
+                        if (lot.equals(code + " - " + intitule)) {
                             getWorkflowInstance().setValue("CautionProvisoire", linkedResourceLot.getValue("CautionProvisoire"));
                             getWorkflowInstance().setValue("MontantEstimatifTTC", linkedResourceLot.getValue("MontantEstimatifTTC"));
                             getWorkflowInstance().setValue("ModeDEvaluation", linkedResourceLot.getValue("ModeDEvaluation"));

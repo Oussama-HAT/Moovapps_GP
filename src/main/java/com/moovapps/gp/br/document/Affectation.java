@@ -7,24 +7,25 @@ import com.axemble.vdoc.sdk.exceptions.ProjectModuleException;
 import com.axemble.vdoc.sdk.exceptions.WorkflowModuleException;
 import com.axemble.vdoc.sdk.interfaces.*;
 
+import java.math.BigDecimal;
 import java.util.Collection;
+
+import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
 
 public class Affectation extends BaseDocumentExtension {
 
     @Override
     public boolean onAfterLoad() {
-        Collection<ILinkedResource> listeArticles = (Collection<ILinkedResource>) getWorkflowInstance()
-                                                    .getLinkedResources("ListeDesArtices_Reception_Tab");
-        Collection<ILinkedResource> affectations = (Collection<ILinkedResource>) getWorkflowInstance()
-                                                    .getLinkedResources("ListeDesAffectation");
+        Collection<ILinkedResource> listeArticles = (Collection<ILinkedResource>) getWorkflowInstance().getLinkedResources("ListeDesArtices_Reception_Tab");
+        Collection<ILinkedResource> affectations = (Collection<ILinkedResource>) getWorkflowInstance().getLinkedResources("ListeDesAffectation");
         ILinkedResource affectation;
-        Number qteArticle = 0;
+        BigDecimal qteArticle = BigDecimal.ZERO;
 
         if(affectations.isEmpty())
         for (ILinkedResource article: listeArticles) {
             if(article.getValue("Stockable").equals("Immobilisation"))
             {
-                qteArticle = (Number) article.getValue("QuantiteLivree")!=null?(Number) article.getValue("QuantiteLivree"):0;
+                qteArticle = article.getValue("QuantiteLivree")!=null? castToBigDecimal(article.getValue("QuantiteLivree")) : BigDecimal.ZERO;
                 for (int i = 0; i < qteArticle.intValue(); i++) {
 
                     affectation = getWorkflowInstance().createLinkedResource("ListeDesAffectation");
@@ -51,8 +52,7 @@ public class Affectation extends BaseDocumentExtension {
     public boolean onAfterSubmit(IAction action) {
         if(action.getName().equals("EnvoyerPourValidation"))
         {
-            Collection<ILinkedResource> listeAffectations = (Collection<ILinkedResource>) getWorkflowInstance()
-                    .getLinkedResources("ListeDesAffectation");
+            Collection<ILinkedResource> listeAffectations = (Collection<ILinkedResource>) getWorkflowInstance().getLinkedResources("ListeDesAffectation");
 
             IContext sysContext = getWorkflowModule().getSysadminContext();
             IContext context = getWorkflowModule().getLoggedOnUserContext();

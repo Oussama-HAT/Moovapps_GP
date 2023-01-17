@@ -11,6 +11,8 @@ import com.moovapps.gp.services.WorkflowsService;
 import java.math.BigDecimal;
 import java.util.Collection;
 
+import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+
 public class DiminutionEngagement extends BaseDocumentExtension {
     protected IContext sysAdminContext = DirectoryService.getSysAdminContext();
 
@@ -53,7 +55,7 @@ public class DiminutionEngagement extends BaseDocumentExtension {
                 if(action!=null){
                     CtlButton ctlButton = getResourceController().getButton(action.getLabel(), 2);
                     if(ctlButton!=null){
-                        BigDecimal rap = (BigDecimal) getWorkflowInstance().getValue("ResteAPayer");
+                        BigDecimal rap = castToBigDecimal(getWorkflowInstance().getValue("ResteAPayer"));
                         if(rap.compareTo(BigDecimal.ZERO)>0)
                         ctlButton.setHidden(true);
                     }
@@ -75,10 +77,10 @@ public class DiminutionEngagement extends BaseDocumentExtension {
                 this.natureBudget = (IStorageResource) getWorkflowInstance().getValue("NatureBudget");
                 this.RubriqueBudgetaire = (String) getWorkflowInstance().getValue("RubriqueBudgetaire");
                 Collection<ILinkedResource> annulationlinkedResources = (Collection<ILinkedResource>) getWorkflowInstance().getLinkedResources("CANCEL_Engagement");
-                this.totalmontantAnnule = getWorkflowInstance().getValue("MontantTotalAnnule") != null ? (BigDecimal) getWorkflowInstance().getValue("MontantTotalAnnule") : BigDecimal.ZERO;
-                this.resteAPayer = (BigDecimal) getWorkflowInstance().getValue("ResteAPayer");
-                this.montantEngager = (BigDecimal) getWorkflowInstance().getValue("MontantAImputer");
-                this.montantPaye = getWorkflowInstance().getValue("MontantPaye") !=null ? (BigDecimal) getWorkflowInstance().getValue("MontantPaye"): BigDecimal.ZERO;
+                this.totalmontantAnnule = getWorkflowInstance().getValue("MontantTotalAnnule") != null ? castToBigDecimal(getWorkflowInstance().getValue("MontantTotalAnnule")) : BigDecimal.ZERO;
+                this.resteAPayer = castToBigDecimal(getWorkflowInstance().getValue("ResteAPayer"));
+                this.montantEngager = castToBigDecimal(getWorkflowInstance().getValue("MontantAImputer"));
+                this.montantPaye = getWorkflowInstance().getValue("MontantPaye") !=null ? castToBigDecimal(getWorkflowInstance().getValue("MontantPaye")): BigDecimal.ZERO;
                 Collection<ILinkedResource> rubriquesLinkedResources = getRubriqueBudgetByCurrentBudget();
                 if (rubriquesLinkedResources == null || rubriquesLinkedResources.isEmpty()) {
                     getResourceController().alert(getWorkflowModule().getStaticString("LG_BUDGET_NOT_OPENED"));
@@ -87,7 +89,7 @@ public class DiminutionEngagement extends BaseDocumentExtension {
                 if (annulationlinkedResources != null && !annulationlinkedResources.isEmpty()) {
                     for (ILinkedResource iLinkedResource : annulationlinkedResources) {
                         if (iLinkedResource.getValue("FLAG").equals(false)) {
-                            this.montantAnnuler = this.montantAnnuler.add((BigDecimal)iLinkedResource.getValue("MontantAnnule"));
+                            this.montantAnnuler = this.montantAnnuler.add(castToBigDecimal(iLinkedResource.getValue("MontantAnnule")));
                             iLinkedResource.setValue("FLAG", true);
                             iLinkedResource.save(sysAdminContext);
                         }
@@ -105,10 +107,10 @@ public class DiminutionEngagement extends BaseDocumentExtension {
                         getResourceController().alert(getWorkflowModule().getStaticString("LG_RAP_LOWER"));
                         return false;
                     }
-                    this.rb_creditsOuvertsCP = (BigDecimal) rubResource.getValue("CreditsOuvertsCP");
-                    this.rb_totalAnnule = rubResource.getValue("TotalAnnulationDiminution") != null ? (BigDecimal) rubResource.getValue("TotalAnnulationDiminution") : BigDecimal.ZERO;
-                    this.resteAPayer_RB = rubResource.getValue("RAP_CURRENT") != null ? (BigDecimal) rubResource.getValue("RAP_CURRENT") : BigDecimal.ZERO;
-                    BigDecimal totalengagement_RB =  rubResource.getValue("TotalDesEngagements") != null ? (BigDecimal) rubResource.getValue("TotalDesEngagements") : BigDecimal.ZERO;
+                    this.rb_creditsOuvertsCP = castToBigDecimal(rubResource.getValue("CreditsOuvertsCP"));
+                    this.rb_totalAnnule = rubResource.getValue("TotalAnnulationDiminution") != null ? castToBigDecimal(rubResource.getValue("TotalAnnulationDiminution")) : BigDecimal.ZERO;
+                    this.resteAPayer_RB = rubResource.getValue("RAP_CURRENT") != null ? castToBigDecimal(rubResource.getValue("RAP_CURRENT")) : BigDecimal.ZERO;
+                    BigDecimal totalengagement_RB =  rubResource.getValue("TotalDesEngagements") != null ? castToBigDecimal(rubResource.getValue("TotalDesEngagements")) : BigDecimal.ZERO;
                     this.rb_totalAnnule = this.rb_totalAnnule.add(this.montantAnnuler);
                     this.rb_disponible = this.rb_creditsOuvertsCP.subtract(totalengagement_RB).add(rb_totalAnnule);
 

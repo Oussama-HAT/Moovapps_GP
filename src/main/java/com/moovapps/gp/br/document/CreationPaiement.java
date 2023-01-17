@@ -7,7 +7,10 @@ import com.axemble.vdoc.sdk.interfaces.IWorkflow;
 import com.axemble.vdoc.sdk.interfaces.IWorkflowInstance;
 import com.moovapps.gp.services.WorkflowsService;
 
+import java.math.BigDecimal;
 import java.util.Collection;
+
+import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
 
 public class CreationPaiement extends BaseDocumentExtension {
     private IContext loggedOnContext = null;
@@ -16,7 +19,7 @@ public class CreationPaiement extends BaseDocumentExtension {
     public boolean onBeforeSubmit(IAction action) {
         try {
             this.loggedOnContext = getWorkflowModule().getLoggedOnUserContext();
-            double rap = 0.0D;
+            BigDecimal rap = BigDecimal.ZERO;
             if(action.getName().equals("EnvoyerPourPaiement")){
                 if(getWorkflowInstance().getValue("BonAPayer").equals("Oui")){
                     IWorkflowInstance BCInstance = getWorkflowInstance().getParentInstance();
@@ -25,12 +28,12 @@ public class CreationPaiement extends BaseDocumentExtension {
                         if(engagements!=null && !engagements.isEmpty()){
                             for(IWorkflowInstance engagementInstance : engagements) {
                                 if(engagementInstance.getValue("DocumentState").equals("Engagement validé")){
-                                    rap = engagementInstance.getValue("ResteAPayer")!=null ? ((Number)engagementInstance.getValue("ResteAPayer")).doubleValue() : 0.0D;
-                                    if(rap == 0){
+                                    rap = engagementInstance.getValue("ResteAPayer")!=null ? castToBigDecimal(engagementInstance.getValue("ResteAPayer")) : BigDecimal.ZERO;
+                                    if(rap.compareTo(BigDecimal.ZERO) == 0){
                                         getResourceController().alert("Action impossible : il ya aucun reste à payer");
                                         return false;
                                     }
-                                    if(((Number)getWorkflowInstance().getValue("TotalFactureTTC")).doubleValue() > rap){
+                                    if((castToBigDecimal(getWorkflowInstance().getValue("TotalFactureTTC"))).compareTo(rap) > 0){
                                         getResourceController().alert("Le montant de paiement est supérieur a le reste a payé de l'engagement");
                                         return false;
                                     }
@@ -40,9 +43,9 @@ public class CreationPaiement extends BaseDocumentExtension {
                                     paiementworkflowInstance.setValue("Fournisseur", engagementInstance.getValue("Fournisseur"));
                                     paiementworkflowInstance.setValue("NatureBudget", engagementInstance.getValue("NatureBudget"));
                                     paiementworkflowInstance.setValue("ENGAGEMENT_INSTANCE", engagementInstance);
-                                    paiementworkflowInstance.setValue("MontantAPayer", getWorkflowInstance().getValue("TotalFactureTTC"));
+                                    paiementworkflowInstance.setValue("MontantAPayer", castToBigDecimal(getWorkflowInstance().getValue("TotalFactureTTC")));
                                     paiementworkflowInstance.save(this.loggedOnContext);
-                                    getWorkflowInstance().addLinkedWorkflowInstance("Paiement" ,  paiementworkflowInstance);
+                                    getWorkflowInstance().addLinkedWorkflowInstance("Paiement" , paiementworkflowInstance);
                                     getWorkflowInstance().save(this.loggedOnContext);
                                     break;
                                 }

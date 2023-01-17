@@ -6,18 +6,22 @@ import com.axemble.vdoc.sdk.interfaces.IContext;
 import com.axemble.vdoc.sdk.interfaces.ILinkedResource;
 import com.axemble.vdoc.sdk.interfaces.IStorageResource;
 import com.axemble.vdoc.sdk.interfaces.IWorkflowInstance;
+
+import java.math.BigDecimal;
 import java.util.Collection;
+
+import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
 
 public class RollBackQuantite extends BaseDocumentExtension {
     private static final long serialVersionUID = 5601744160228878765L;
 
     private IContext sysCreatorContext = null;
 
-    private Float quantiteLivree_br = Float.valueOf(0.0F);
+    private BigDecimal quantiteLivree_br = BigDecimal.ZERO;
 
-    private Float quantiteLivree_bc = Float.valueOf(0.0F);
+    private BigDecimal quantiteLivree_bc = BigDecimal.ZERO;
 
-    private Float resteALivrer_bc = Float.valueOf(0.0F);
+    private BigDecimal resteALivrer_bc = BigDecimal.ZERO;
 
     private IStorageResource article_bc = null, article_br = null;
 
@@ -31,15 +35,15 @@ public class RollBackQuantite extends BaseDocumentExtension {
                     Collection<ILinkedResource> BR_articles = (Collection<ILinkedResource>) getWorkflowInstance().getLinkedResources("ListeDesArtices_Reception_Tab");
                     for (ILinkedResource br_art : BR_articles) {
                         this.article_br = (IStorageResource)br_art.getValue("Article");
-                        this.quantiteLivree_br = (Float)br_art.getValue("QuantiteLivree");
+                        this.quantiteLivree_br = castToBigDecimal(br_art.getValue("QuantiteLivree"));
                         for (ILinkedResource bc_art : BC_articles) {
                             this.article_bc = (IStorageResource)bc_art.getValue("Article");
                             if (this.article_bc.getValue("sys_Reference").equals(this.article_br.getValue("sys_Reference"))) {
-                                this.quantiteLivree_bc = (Float)bc_art.getValue("QuantiteLivree");
-                                this.resteALivrer_bc = (Float)bc_art.getValue("ResteALivrer");
-                                this.quantiteLivree_bc = Float.valueOf(this.quantiteLivree_bc.floatValue() - this.quantiteLivree_br.floatValue());
+                                this.quantiteLivree_bc = castToBigDecimal(bc_art.getValue("QuantiteLivree"));
+                                this.resteALivrer_bc = castToBigDecimal(bc_art.getValue("ResteALivrer"));
+                                this.quantiteLivree_bc = this.quantiteLivree_bc.subtract(this.quantiteLivree_br);
                                 bc_art.setValue("QuantiteLivree", this.quantiteLivree_bc);
-                                bc_art.setValue("ResteALivrer", Float.valueOf(this.resteALivrer_bc.floatValue() + this.quantiteLivree_br.floatValue()));
+                                bc_art.setValue("ResteALivrer", this.resteALivrer_bc.add(this.quantiteLivree_br));
                                 bc_art.save(this.sysCreatorContext);
                             }
                         }

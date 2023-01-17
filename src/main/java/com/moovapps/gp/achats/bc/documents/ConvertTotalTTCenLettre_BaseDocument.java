@@ -4,6 +4,10 @@ import com.axemble.vdoc.sdk.document.extensions.BaseDocumentExtension;
 import com.axemble.vdoc.sdk.interfaces.IProperty;
 import com.moovapps.gp.helpers.ConvertirMontantEnLettre;
 
+import java.math.BigDecimal;
+
+import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+
 public class ConvertTotalTTCenLettre_BaseDocument extends BaseDocumentExtension {
     private static final long serialVersionUID = -1513666146210682764L;
 
@@ -32,7 +36,7 @@ public class ConvertTotalTTCenLettre_BaseDocument extends BaseDocumentExtension 
     private void setMontantEnLettre() {
         try {
             if (getWorkflowInstance().getValue("TotalTTC") != null) {
-                Double montantBC = Double.valueOf(((Double)getWorkflowInstance().getValue("TotalTTC")).doubleValue());
+                BigDecimal montantBC =castToBigDecimal(getWorkflowInstance().getValue("TotalTTC"));
                 getWorkflowInstance().setValue("TotalTTCEnLettre", ConvertirMontantEnLettre.begin(String.valueOf(montantBC)));
             } else {
                 getWorkflowInstance().setValue("TotalTTCEnLettre", null);

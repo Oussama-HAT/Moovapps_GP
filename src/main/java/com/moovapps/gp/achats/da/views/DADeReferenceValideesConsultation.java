@@ -19,11 +19,15 @@ import com.axemble.vdp.ui.framework.widgets.CtlCheckBox;
 import com.axemble.vdp.ui.framework.widgets.CtlText;
 import com.axemble.vdp.workflow.domain.ProcessWorkflowInstance;
 import com.moovapps.gp.services.DirectoryService;
+
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Vector;
+
+import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
 
 public class DADeReferenceValideesConsultation extends BaseViewExtension {
     protected IContext sysAdminContext = DirectoryService.getSysAdminContext();
@@ -119,26 +123,26 @@ public class DADeReferenceValideesConsultation extends BaseViewExtension {
             ILinkedResource newLinkedResource = null;
             Collection<IProperty> properties = null;
             IStorageResource articleDA = null, articleBDP = null;
-            Float quantiteDA = null, quantiteBDP = null;
+            BigDecimal quantiteDA = null, quantiteBDP = null;
             String commentaireDA = null, commentaireBDP = null;
             Collection<String> urisDA = new ArrayList<>();
             Collection<String> referencesDA = new ArrayList<>();
             String uriDA = workflowInstanceDA.getProtocolURI();
             String referenceDA = (String)workflowInstanceDA.getValue("sys_Reference");
-            Boolean existe = Boolean.valueOf(false);
+            boolean existe = false;
             for (ILinkedResource linkedResourceArticleDA : linkedResourcesArticlesDA) {
-                existe = Boolean.valueOf(false);
+                existe = false;
                 urisDA = new ArrayList<>();
                 referencesDA = new ArrayList<>();
                 articleDA = (IStorageResource)linkedResourceArticleDA.getValue("Article");
                 if (linkedResourcesArticlesBDP != null && !linkedResourcesArticlesBDP.isEmpty())
                     for (ILinkedResource linkedResourceArticleBDP : linkedResourcesArticlesBDP) {
                         articleBDP = (IStorageResource)linkedResourceArticleBDP.getValue("Article");
-                        if (articleDA != null && articleBDP != null && articleDA.equals(articleBDP)) {
-                            quantiteDA = (Float)linkedResourceArticleDA.getValue("Quantite");
-                            quantiteBDP = (Float)linkedResourceArticleBDP.getValue("Quantite");
+                        if (articleDA != null && (articleBDP != null && articleDA.equals(articleBDP))) {
+                            quantiteDA = castToBigDecimal(linkedResourceArticleDA.getValue("Quantite"));
+                            quantiteBDP = castToBigDecimal(linkedResourceArticleBDP.getValue("Quantite"));
                             if (quantiteDA != null && quantiteBDP != null) {
-                                linkedResourceArticleBDP.setValue("Quantite", Float.valueOf(quantiteBDP.floatValue() + quantiteDA.floatValue()));
+                                linkedResourceArticleBDP.setValue("Quantite", quantiteBDP.add(quantiteDA));
                                 urisDA = (ArrayList)linkedResourceArticleBDP.getValue("URISDA");
                                 if (urisDA != null && !urisDA.contains(uriDA)) {
                                     urisDA.add(uriDA);
@@ -158,11 +162,11 @@ public class DADeReferenceValideesConsultation extends BaseViewExtension {
                                 }
                                 linkedResourceArticleBDP.save(this.sysAdminContext);
                             }
-                            existe = Boolean.valueOf(true);
+                            existe = true;
                             break;
                         }
                     }
-                if (!existe.booleanValue()) {
+                if (!existe) {
                     properties = (Collection<IProperty>) linkedResourceArticleDA.getDefinition().getProperties();
                     newLinkedResource = getWorkflowInstance().createLinkedResource("BordereauDePrix_Tab");
                     for (IProperty property : properties) {

@@ -216,12 +216,12 @@ public class TabBaseNotationTechnique extends BaseViewExtension {
             } else if (CtlNumber.class.equals(object.getClass())) {
                 CtlNumber number = (CtlNumber)object;
                 iLinkedResource = (ILinkedResource)number.getParam();
-                iLinkedResource.setValue(number.getSysname(), number.getFloatValue());
+                iLinkedResource.setValue(number.getSysname(), number.getNumberValue());
                 iLinkedResource.save(TabBaseNotationTechnique.this.sysAdminContext);
             } else if (CtlCheckBox.class.equals(object.getClass())) {
                 CtlCheckBox checkBox = (CtlCheckBox)object;
                 iLinkedResource = (ILinkedResource)checkBox.getParam();
-                iLinkedResource.setValue(checkBox.getSysname(), Boolean.valueOf(checkBox.isChecked()));
+                iLinkedResource.setValue(checkBox.getSysname(), checkBox.isChecked());
                 iLinkedResource.save(TabBaseNotationTechnique.this.sysAdminContext);
             } else if (CtlComboBox.class.equals(object.getClass())) {
                 CtlComboBox box = (CtlComboBox)object;

@@ -23,6 +23,8 @@ import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
+import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+
 public class InitiationEngagement extends BaseDocumentExtension {
     private static final long serialVersionUID = 1L;
     protected IContext sysAdminContext = DirectoryService.getSysAdminContext();
@@ -57,7 +59,7 @@ public class InitiationEngagement extends BaseDocumentExtension {
                 getWorkflowInstance().setList("RubriqueBudgetaire", null );
             }
             if(getWorkflowInstance().getValue("RubriqueBudgetaire")!=null && getWorkflowInstance().getValue("Disponible")!=null) {
-                this.disponible = (BigDecimal) getWorkflowInstance().getValue("Disponible");
+                this.disponible = castToBigDecimal(getWorkflowInstance().getValue("Disponible"));
                 getWorkflowInstance().setValue("Disponible",this.disponible);
                 TextBoxField field = ((TextBoxField) getDocument().getDefaultWidget("MontantAImputer"));
                 BigDecimalInputComponent component = (BigDecimalInputComponent) field.getInputComponent();
@@ -98,7 +100,7 @@ public class InitiationEngagement extends BaseDocumentExtension {
                                                                     .findFirst()
                                                                     .orElse(null);
                     if(iLinkedResource!=null){
-                        this.disponible = iLinkedResource.getValue("Disponible")!=null ? (BigDecimal) iLinkedResource.getValue("Disponible") : (BigDecimal) iLinkedResource.getValue("CreditsOuvertsCP");
+                        this.disponible = iLinkedResource.getValue("Disponible")!=null ? castToBigDecimal(iLinkedResource.getValue("Disponible")) : castToBigDecimal(iLinkedResource.getValue("CreditsOuvertsCP"));
                         getWorkflowInstance().setValue("Disponible",this.disponible);
                         TextBoxField field = ((TextBoxField) getDocument().getDefaultWidget("MontantAImputer"));
                         BigDecimalInputComponent component = (BigDecimalInputComponent) field.getInputComponent();
@@ -132,7 +134,7 @@ public class InitiationEngagement extends BaseDocumentExtension {
     public boolean checkBudget(String protocolURI , String Annee , IStorageResource natureBudget){
         boolean ischecked = true;
         try {
-            BigDecimal montantEngager = (BigDecimal) getWorkflowInstance().getValue("MontantAImputer");
+            BigDecimal montantEngager = castToBigDecimal(getWorkflowInstance().getValue("MontantAImputer"));
             Collection<ILinkedResource> linkedResources = getRubriqueBudgetByCurrentBudget(Annee , natureBudget);
             if(linkedResources==null || linkedResources.isEmpty()){
                 getResourceController().alert(getWorkflowModule().getStaticString("LG_BUDGET_NOT_OPENED"));
@@ -140,8 +142,8 @@ public class InitiationEngagement extends BaseDocumentExtension {
             }
             for(ILinkedResource iLinkedResource : linkedResources){
                 if(((IStorageResource)iLinkedResource.getValue("RubriqueBudgetaire")).getValue("RubriqueBudgetaire").equals(protocolURI)){
-                    BigDecimal Disponible = (BigDecimal) iLinkedResource.getValue("Disponible");
-                    if(iLinkedResource.getValue("Disponible")!=null &&  montantEngager.compareTo(Disponible) > 0){
+                    BigDecimal Disponible = castToBigDecimal(iLinkedResource.getValue("Disponible"));
+                    if(Disponible!=null &&  montantEngager.compareTo(Disponible) > 0){
                         getResourceController().alert(getWorkflowModule().getStaticString("LG_DISPO_LOWER"));
                         return false;
                     }

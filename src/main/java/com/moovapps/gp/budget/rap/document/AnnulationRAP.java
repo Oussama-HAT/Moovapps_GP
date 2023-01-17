@@ -3,6 +3,7 @@ package com.moovapps.gp.budget.rap.document;
 import com.axemble.vdoc.sdk.document.extensions.BaseDocumentExtension;
 import com.axemble.vdoc.sdk.interfaces.*;
 import com.axemble.vdp.ui.framework.widgets.CtlButton;
+import com.axemble.vdp.utils.CollectionUtils;
 import com.moovapps.gp.budget.helpers.Const;
 import com.moovapps.gp.budget.helpers.calculate;
 import com.moovapps.gp.services.DirectoryService;
@@ -10,6 +11,8 @@ import com.moovapps.gp.services.WorkflowsService;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+
+import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
 
 public class AnnulationRAP extends BaseDocumentExtension {
     protected IContext sysAdminContext = DirectoryService.getSysAdminContext();
@@ -62,8 +65,8 @@ public class AnnulationRAP extends BaseDocumentExtension {
                 this.natureBudget = (IStorageResource) getWorkflowInstance().getValue("NatureBudget");
                 this.RubriqueBudgetaire = (String) getWorkflowInstance().getValue("RubriqueBudgetaire");
                 Collection<ILinkedResource> annulationlinkedResources = (Collection<ILinkedResource>) getWorkflowInstance().getLinkedResources("CANCEL_RAP");
-                this.totalmontantAnnule = getWorkflowInstance().getValue("MontantTotalAnnule") != null ? (BigDecimal) getWorkflowInstance().getValue("MontantTotalAnnule") : BigDecimal.ZERO;
-                BigDecimal rapN = getWorkflowInstance().getValue("ResteAPayerN1")!=null ? (BigDecimal) getWorkflowInstance().getValue("ResteAPayerN1"): BigDecimal.ZERO;
+                this.totalmontantAnnule = getWorkflowInstance().getValue("MontantTotalAnnule") != null ? castToBigDecimal(getWorkflowInstance().getValue("MontantTotalAnnule")): BigDecimal.ZERO;
+                BigDecimal rapN = getWorkflowInstance().getValue("ResteAPayerN1")!=null ? castToBigDecimal(getWorkflowInstance().getValue("ResteAPayerN1")): BigDecimal.ZERO;
                 Collection<ILinkedResource> rubriquesLinkedResources = getRubriqueBudgetByCurrentBudget();
                 if (rubriquesLinkedResources == null || rubriquesLinkedResources.isEmpty()) {
                     getResourceController().alert("Action impossible : La rubrique budgétaire n'est pas existe , Merci de contacter votre administrateur !!");
@@ -72,8 +75,7 @@ public class AnnulationRAP extends BaseDocumentExtension {
                 if (annulationlinkedResources != null && !annulationlinkedResources.isEmpty()) {
                     for (ILinkedResource iLinkedResource : annulationlinkedResources) {
                         if (iLinkedResource.getValue("FLAG").equals(false)) {
-                            this.montantAnnuler = this.montantAnnuler.add((BigDecimal) iLinkedResource.getValue("MontantAnnule"));
-                            //montantAnnuler += ((Number) iLinkedResource.getValue("MontantAnnule")).doubleValue();
+                            this.montantAnnuler = this.montantAnnuler.add(castToBigDecimal(iLinkedResource.getValue("MontantAnnule")));
                             iLinkedResource.setValue("FLAG", true);
                             iLinkedResource.save(this.sysAdminContext);
                         }
@@ -90,8 +92,8 @@ public class AnnulationRAP extends BaseDocumentExtension {
                         getResourceController().alert(getWorkflowModule().getStaticString("LG_RAPN_LOWER"));
                         return false;
                     }
-                    this.rapLibere_RB = (BigDecimal) rubResource.getValue("RAP_libere");
-                    this.resteAPayer_RB = rubResource.getValue("RAP_CURRENT") != null ? (BigDecimal) rubResource.getValue("RAP_CURRENT") : BigDecimal.ZERO;
+                    this.rapLibere_RB = castToBigDecimal(rubResource.getValue("RAP_libere"));
+                    this.resteAPayer_RB = rubResource.getValue("RAP_CURRENT") != null ? castToBigDecimal(rubResource.getValue("RAP_CURRENT")) : BigDecimal.ZERO;
                     this.totalmontantAnnule = this.totalmontantAnnule.add(this.montantAnnuler);
                     rubResource.setValue("RAP_libere", this.rapLibere_RB.add(this.montantAnnuler));
                     rubResource.setValue("RAP_CURRENT", this.resteAPayer_RB.subtract(this.montantAnnuler));

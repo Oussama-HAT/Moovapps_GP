@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+
 public class checkRubriqueExist extends BaseResourceExtension {
 
 
@@ -22,7 +24,7 @@ public class checkRubriqueExist extends BaseResourceExtension {
         try {
             ILinkedResource iLinkedResource = getLinkedResource();
             iLinkedResource.getProtocolURI();
-            BigDecimal totalEngagement = (BigDecimal) iLinkedResource.getValue("TotalDesEngagements");
+            BigDecimal totalEngagement = castToBigDecimal(iLinkedResource.getValue("TotalDesEngagements"));
             TextBoxField field = ((TextBoxField) getDocument().getDefaultWidget("CreditsOuvertsCP"));
             BigDecimalInputComponent component = (BigDecimalInputComponent) field.getInputComponent();
             component.setNumberMin(totalEngagement);

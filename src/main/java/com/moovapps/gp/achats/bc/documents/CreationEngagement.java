@@ -7,6 +7,10 @@ import com.axemble.vdoc.sdk.interfaces.IWorkflow;
 import com.axemble.vdoc.sdk.interfaces.IWorkflowInstance;
 import com.moovapps.gp.services.WorkflowsService;
 
+import java.math.BigDecimal;
+
+import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+
 public class CreationEngagement extends BaseDocumentExtension {
     private IContext loggedOnContext = null;
 
@@ -20,7 +24,7 @@ public class CreationEngagement extends BaseDocumentExtension {
                 engagementworkflowInstance.setValue("ReferenceBCMarche", getWorkflowInstance().getValue("sys_Reference"));
                 engagementworkflowInstance.setValue("Fournisseur", getWorkflowInstance().getValue("Fournisseur"));
                 engagementworkflowInstance.setValue("ObjetEngagement", getWorkflowInstance().getValue("ObjetDuBC"));
-                engagementworkflowInstance.setValue("MontantAImputer", getWorkflowInstance().getValue("TotalTTC"));
+                engagementworkflowInstance.setValue("MontantAImputer", castToBigDecimal(getWorkflowInstance().getValue("TotalTTC")));
                 engagementworkflowInstance.save(this.loggedOnContext);
                 getWorkflowInstance().addLinkedWorkflowInstance("Engagement" ,  engagementworkflowInstance);
                 getWorkflowInstance().save(this.loggedOnContext);

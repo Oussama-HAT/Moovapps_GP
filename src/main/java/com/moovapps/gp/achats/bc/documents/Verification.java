@@ -5,10 +5,14 @@ import com.axemble.vdoc.sdk.interfaces.*;
 import com.moovapps.gp.budget.helpers.Const;
 import com.moovapps.gp.services.DirectoryService;
 import com.moovapps.gp.services.WorkflowsService;
+import org.apache.ecs.wml.Big;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
+
+import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
 
 public class Verification extends BaseDocumentExtension {
     protected IContext sysAdminContext = DirectoryService.getSysAdminContext();
@@ -18,19 +22,19 @@ public class Verification extends BaseDocumentExtension {
         try{
             if(action.getName().equals("Refuser")){
                 Collection<IWorkflowInstance> engagements = (Collection<IWorkflowInstance>) getWorkflowInstance().getLinkedWorkflowInstances("Engagement");
-                double montantAnnuler = 0.0D;
+                BigDecimal montantAnnuler = BigDecimal.ZERO;
                 if(engagements!=null && !engagements.isEmpty()){
                     for(IWorkflowInstance engagementInstance : engagements){
                         if(engagementInstance.getValue("DocumentState").equals("Engagement validé")){
                             String rb = (String) engagementInstance.getValue("RubriqueBudgetaire");
-                            double montantpaye = engagementInstance.getValue("MontantPaye")!=null ?((Number)engagementInstance.getValue("MontantPaye")).doubleValue() : 0.0D;
-                            if(montantpaye>0){
+                            BigDecimal montantpaye = engagementInstance.getValue("MontantPaye")!=null ? castToBigDecimal(engagementInstance.getValue("MontantPaye")) : BigDecimal.ZERO;
+                            if(montantpaye.compareTo(BigDecimal.ZERO) > 0){
                                 getResourceController().alert("Action impossible : Le bon de commande contient un engagemet payé");
                                 return false;
                             }
                             Collection<ILinkedResource> annulationlinkedResources = (Collection<ILinkedResource>) engagementInstance.getLinkedResources("CANCEL_Engagement");
-                            double totalmontantAnnule = engagementInstance.getValue("MontantTotalAnnule") != null ? ((Number) engagementInstance.getValue("MontantTotalAnnule")).doubleValue() : 0.0D;
-                            double resteAPayer = 0.0D;
+                            BigDecimal totalmontantAnnule = engagementInstance.getValue("MontantTotalAnnule") != null ? castToBigDecimal(engagementInstance.getValue("MontantTotalAnnule")): BigDecimal.ZERO;
+                            BigDecimal resteAPayer = BigDecimal.ZERO;
                             Collection<ILinkedResource> rubriquesLinkedResources = getRubriqueBudgetByCurrentBudget((String)engagementInstance.getValue("AnneeBudgetaire") , (IStorageResource) engagementInstance.getValue("NatureBudget"));
                             if (rubriquesLinkedResources == null || rubriquesLinkedResources.isEmpty()) {
                                 getResourceController().alert(getWorkflowModule().getStaticString("LG_BUDGET_NOT_OPENED"));
@@ -39,7 +43,7 @@ public class Verification extends BaseDocumentExtension {
                             if (annulationlinkedResources != null && !annulationlinkedResources.isEmpty()) {
                                 for (ILinkedResource iLinkedResource : annulationlinkedResources) {
                                     if (iLinkedResource.getValue("FLAG").equals(false)) {
-                                        montantAnnuler += ((Number) iLinkedResource.getValue("MontantAnnule")).doubleValue();
+                                        montantAnnuler = montantAnnuler.add(castToBigDecimal(iLinkedResource.getValue("MontantAnnule")));
                                     }
                                 }
                                 ILinkedResource rubResource = rubriquesLinkedResources.stream()
@@ -52,8 +56,9 @@ public class Verification extends BaseDocumentExtension {
                                     return false;
                                 }
                             }
-                            double montantBc =((Number) engagementInstance.getValue("MontantAImputer")).doubleValue();
-                            resteAPayer = montantBc - (totalmontantAnnule+montantAnnuler) - montantpaye;
+                            BigDecimal montantBc =castToBigDecimal(engagementInstance.getValue("MontantAImputer"));
+                            //resteAPayer = montantBc - (totalmontantAnnule+montantAnnuler) - montantpaye;
+                            resteAPayer = montantBc.subtract(totalmontantAnnule.add(montantAnnuler)).subtract(montantpaye);
                             ILinkedResource iLinkedResource = engagementInstance.createLinkedResource("CANCEL_Engagement");
                             iLinkedResource.setValue("id" , UUID.randomUUID().toString());
                             iLinkedResource.setValue("DateDiminution" , new Date());

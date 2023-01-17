@@ -34,10 +34,14 @@ import com.axemble.vdp.ui.framework.widgets.list.Option;
 import com.axemble.vdp.utils.parameters.TempUploadFile;
 import com.moovapps.gp.services.DataUniversService;
 import com.moovapps.gp.services.DirectoryService;
+
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+
+import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
 
 public class Articles_Reception extends BaseViewExtension {
     private static final long serialVersionUID = 1L;
@@ -56,17 +60,17 @@ public class Articles_Reception extends BaseViewExtension {
 
     protected Object valeur = null;
 
-    private Float resteALivrer = Float.valueOf(0.0F);
+    private BigDecimal resteALivrer = BigDecimal.ZERO;
 
-    private Float quantiteLivree = Float.valueOf(0.0F);
+    private BigDecimal quantiteLivree = BigDecimal.ZERO;
 
-    private Double prixUnitaire = new Double(0.0D);
+    private BigDecimal prixUnitaire = BigDecimal.ZERO;
 
-    private Float tva = Float.valueOf(0.0F);
+    private BigDecimal tva =BigDecimal.ZERO;
 
-    private Double prixTotalHT = new Double(0.0D);
+    private BigDecimal prixTotalHT = BigDecimal.ZERO;
 
-    private Double prixTotalTTC = new Double(0.0D);
+    private BigDecimal prixTotalTTC = BigDecimal.ZERO;
 
     public void onPrepareColumns(List list) {
         try {
@@ -207,12 +211,12 @@ public class Articles_Reception extends BaseViewExtension {
                 iLinkedResource.setValue(txtBox.getSysname(), txtBox.getLabel());
                 iLinkedResource.save(Articles_Reception.this.sysAdminContext);
             } else if (CtlNumber.class.equals(object.getClass())) {
-                Articles_Reception.this.quantiteLivree = Float.valueOf(0.0F);
-                Articles_Reception.this.prixUnitaire = new Double(0.0D);
-                Articles_Reception.this.tva = Float.valueOf(0.0F);
-                Articles_Reception.this.prixTotalHT = new Double(0.0D);
-                Articles_Reception.this.prixTotalTTC = new Double(0.0D);
-                Articles_Reception.this.resteALivrer = Float.valueOf(0.0F);
+                Articles_Reception.this.quantiteLivree = BigDecimal.ZERO;
+                Articles_Reception.this.prixUnitaire = BigDecimal.ZERO;
+                Articles_Reception.this.tva = BigDecimal.ZERO;
+                Articles_Reception.this.prixTotalHT = BigDecimal.ZERO;
+                Articles_Reception.this.prixTotalTTC = BigDecimal.ZERO;
+                Articles_Reception.this.resteALivrer = BigDecimal.ZERO;
                 CtlNumber number = (CtlNumber)object;
                 iLinkedResource = (ILinkedResource)number.getParam();
                 if (number.getSysname().startsWith("Quantite") || number.getSysname().equals("TVA")) {
@@ -220,16 +224,17 @@ public class Articles_Reception extends BaseViewExtension {
                 } else {
                     iLinkedResource.setValue(number.getSysname(), number.getDoubleValue());
                 }
-                Articles_Reception.this.resteALivrer = ((Number)iLinkedResource.getValue("ResteALivrer")).floatValue();
+                Articles_Reception.this.resteALivrer = castToBigDecimal(iLinkedResource.getValue("ResteALivrer"));
                 if (iLinkedResource.getValue("QuantiteLivree") != null)
-                    Articles_Reception.this.quantiteLivree = ((Number)iLinkedResource.getValue("QuantiteLivree")).floatValue();
+                    Articles_Reception.this.quantiteLivree = castToBigDecimal(iLinkedResource.getValue("QuantiteLivree"));
 
                     if (iLinkedResource.getValue("PrixUnitaire") != null)
-                        Articles_Reception.this.prixUnitaire = (Double)iLinkedResource.getValue("PrixUnitaire");
+                        Articles_Reception.this.prixUnitaire = castToBigDecimal(iLinkedResource.getValue("PrixUnitaire"));
                     if (iLinkedResource.getValue("TVA") != null)
-                        Articles_Reception.this.tva = ((Number)iLinkedResource.getValue("TVA")).floatValue();
-                    Articles_Reception.this.prixTotalHT = Double.valueOf(Articles_Reception.this.quantiteLivree.floatValue() * Articles_Reception.this.prixUnitaire.doubleValue());
-                    Articles_Reception.this.prixTotalTTC = Double.valueOf(Articles_Reception.this.prixTotalHT.doubleValue() + Articles_Reception.this.prixTotalHT.doubleValue() * Articles_Reception.this.tva.floatValue() / 100.0D);
+                        Articles_Reception.this.tva = castToBigDecimal(iLinkedResource.getValue("TVA"));
+                    Articles_Reception.this.prixTotalHT = Articles_Reception.this.quantiteLivree.add(Articles_Reception.this.prixUnitaire);
+                    Articles_Reception.this.prixTotalTTC =Articles_Reception.this.prixTotalHT.add(Articles_Reception.this.prixTotalHT.multiply(Articles_Reception.this.tva.divide(BigDecimal.valueOf(100))));
+            //Articles_Reception.this.prixTotalHT.doubleValue() * Articles_Reception.this.tva.floatValue() / 100.0D);
                     iLinkedResource.setValue("PrixTotalHT", Articles_Reception.this.prixTotalHT);
                     iLinkedResource.setValue("PrixTotalTTC", Articles_Reception.this.prixTotalTTC);
 

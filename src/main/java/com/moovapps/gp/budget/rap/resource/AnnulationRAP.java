@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
+import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+
 public class AnnulationRAP extends BaseResourceExtension {
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -34,7 +36,7 @@ public class AnnulationRAP extends BaseResourceExtension {
             Field.setStartSelectionRange(DATE_FORMAT.format(start));
         }
 
-        BigDecimal Max = (BigDecimal) iWorkflowInstance.getValue("ResteAPayer");
+        BigDecimal Max = castToBigDecimal(iWorkflowInstance.getValue("ResteAPayer"));
         ArrayList<ILinkedResource> linkedResourceCollection = (ArrayList<ILinkedResource>) getLinkedResource().getParentInstance().getLinkedResources(getLinkedResource().getDefinition().getName());
         if (linkedResourceCollection != null) {
             if (linkedResourceCollection.isEmpty()) {
@@ -46,7 +48,7 @@ public class AnnulationRAP extends BaseResourceExtension {
                     if (!linkedResourceCollection.get(i).getValue("id").equals(getLinkedResource().getValue("id"))) {
                         boolean flagged = (boolean) linkedResourceCollection.get(i).getValue("FLAG");
                         if(!flagged) {
-                            BigDecimal montantannuler = linkedResourceCollection.get(i).getValue("MontantAnnule") != null ? (BigDecimal) linkedResourceCollection.get(i).getValue("MontantAnnule") : BigDecimal.ZERO;
+                            BigDecimal montantannuler = linkedResourceCollection.get(i).getValue("MontantAnnule") != null ? castToBigDecimal(linkedResourceCollection.get(i).getValue("MontantAnnule")) : BigDecimal.ZERO;
                             Max = Max.subtract(montantannuler);
                             // Max -= (linkedResourceCollection.get(i).getValue("MontantAnnule") != null ? (Double) linkedResourceCollection.get(i).getValue("MontantAnnule") : 0);
                         }
