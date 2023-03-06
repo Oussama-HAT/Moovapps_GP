@@ -3,6 +3,7 @@ C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\achats\a
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\achats\bc\views\BordereauDesPrix.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\budget\generationBudget\documents\ClotureBudget.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\services\Aspose.java
+C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\budget\utils\BudgetUtils.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\achats\consultation\documents\FicheConsultation.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\achats\bc\documents\Verification.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\achats\da\tableaux\Articles.java
@@ -10,12 +11,12 @@ C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\achats\c
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\services\Aspose2.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\achats\offre\documents\DemandeDePrix.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\budget\preparationBudget\documents\PreparationBudget.java
-C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\budget\helpers\Const.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\budget\rap\definition\ControleDelete.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\Equipment\equipment360view.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\achats\ao\views\TabDepotDeDossiers.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\achats\da\views\DADeReferenceValideesAO.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\budget\engagement\document\AnnulationEngagement.java
+C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\budget\generationBudget\documents\RetrieveRAPN1.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\budget\ordreRecette\document\ValiderOrdreRecette.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\achats\ao\views\TabCriteresNotationTechnique.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\achats\ao\views\TabRetraitDesDossiers.java
@@ -23,6 +24,7 @@ C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\achats\c
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\achats\ao\documents\ExamenEchantillons.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\achats\consultation\documents\DecisionFinale.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\achats\consultation\resource\checkFournisseur.java
+C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\budget\utils\Const.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\achats\bc\documents\v2\Enregistrement.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\achats\leveeReserves\documents\EvaluationLeveeReserves.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\Equipment\historiqueDesCompteurs.java
@@ -46,7 +48,6 @@ C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\achats\l
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\budget\engagement\document\InitiationEngagement.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\budget\paiement\view\PAY_Budget_Tab.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\br\view\Articles_Reception.java
-C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\budget\helpers\copyWorkflow.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\helpers\DateService.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\achats\depotDossier\views\TabDossierTechnique.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\br\document\CommitQuantite.java
@@ -102,7 +103,6 @@ C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\achats\d
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\budget\engagement\resource\AnnulationEngagement.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\achats\da\documents\TraitementDA.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\achats\consultation\views\TabDevisContradictoires.java
-C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\budget\helpers\calculate.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\achats\depotDossier\views\TabDossierAdministratif.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\achats\da\views\DADeReferenceValideesConsultation.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\br\document\CreationPaiement.java
@@ -113,11 +113,13 @@ C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\br\docum
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\services\DirectoryService.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\reception\ValidationReseption.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\achats\consultation\views\TabDecisionFinale.java
+C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\budget\utils\copyWorkflow.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\services\MasquerTopButtons.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\achats\depotDossier\views\TabEvaluationTechnique.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\achats\ao\tableaux\TabLots.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\achats\consultation\views\TabEvaluationOffres.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\budget\engagement\resource\definition\ControleDelete.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\services\MasquerBottomButtons.java
+C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\budget\utils\calculate.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\achats\ao\views\TabCommissionPleniere.java
 C:\Users\o.hatim\IdeaProjects\Moovapps_GP\src\main\java\com\moovapps\gp\br\view\v2\Articles_Reception.java

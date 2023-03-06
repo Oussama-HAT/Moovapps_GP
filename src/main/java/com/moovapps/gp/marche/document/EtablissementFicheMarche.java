@@ -7,11 +7,10 @@ import com.axemble.vdoc.sdk.interfaces.IProperty;
 import com.axemble.vdoc.sdk.interfaces.IResource;
 import com.axemble.vdoc.sdk.interfaces.IWorkflowInstance;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+import static com.moovapps.gp.budget.utils.calculate.castToBigDecimal;
 
 public class EtablissementFicheMarche extends BaseDocumentExtension {
     private static final long serialVersionUID = 8760885001689442102L;

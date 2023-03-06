@@ -2,14 +2,13 @@ package com.moovapps.gp.budget.engagement.document;
 
 import com.axemble.vdoc.sdk.document.extensions.BaseDocumentExtension;
 import com.axemble.vdoc.sdk.interfaces.*;
-import com.moovapps.gp.budget.helpers.Const;
-import com.moovapps.gp.budget.helpers.calculate;
+import com.moovapps.gp.budget.utils.Const;
 import com.moovapps.gp.services.WorkflowsService;
 
 import java.math.BigDecimal;
 import java.util.Collection;
 
-import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+import static com.moovapps.gp.budget.utils.calculate.castToBigDecimal;
 
 public class EN_updateRubriquesBudget extends BaseDocumentExtension {
     private static final long serialVersionUID = 1L;

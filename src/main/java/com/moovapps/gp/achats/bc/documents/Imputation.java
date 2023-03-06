@@ -5,7 +5,7 @@ import com.axemble.vdoc.sdk.interfaces.IAction;
 
 import java.math.BigDecimal;
 
-import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+import static com.moovapps.gp.budget.utils.calculate.castToBigDecimal;
 
 public class Imputation extends BaseDocumentExtension {
 

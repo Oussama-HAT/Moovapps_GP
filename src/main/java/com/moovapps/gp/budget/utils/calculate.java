@@ -1,4 +1,4 @@
-package com.moovapps.gp.budget.helpers;
+package com.moovapps.gp.budget.utils;
 
 import java.math.BigDecimal;
 

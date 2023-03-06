@@ -2,7 +2,7 @@ package com.moovapps.gp.budget.ordreRecette.resource;
 
 import com.axemble.vdoc.sdk.document.extensions.BaseResourceExtension;
 import com.axemble.vdoc.sdk.interfaces.*;
-import com.moovapps.gp.budget.helpers.Const;
+import com.moovapps.gp.budget.utils.Const;
 import com.moovapps.gp.services.DirectoryService;
 import com.moovapps.gp.services.WorkflowsService;
 

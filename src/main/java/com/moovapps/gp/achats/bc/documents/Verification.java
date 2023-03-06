@@ -2,17 +2,16 @@ package com.moovapps.gp.achats.bc.documents;
 
 import com.axemble.vdoc.sdk.document.extensions.BaseDocumentExtension;
 import com.axemble.vdoc.sdk.interfaces.*;
-import com.moovapps.gp.budget.helpers.Const;
+import com.moovapps.gp.budget.utils.Const;
 import com.moovapps.gp.services.DirectoryService;
 import com.moovapps.gp.services.WorkflowsService;
-import org.apache.ecs.wml.Big;
 
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
 
-import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+import static com.moovapps.gp.budget.utils.calculate.castToBigDecimal;
 
 public class Verification extends BaseDocumentExtension {
     protected IContext sysAdminContext = DirectoryService.getSysAdminContext();

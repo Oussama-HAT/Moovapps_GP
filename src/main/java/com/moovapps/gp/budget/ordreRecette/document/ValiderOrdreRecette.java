@@ -2,21 +2,17 @@ package com.moovapps.gp.budget.ordreRecette.document;
 
 import com.axemble.vdoc.sdk.Modules;
 import com.axemble.vdoc.sdk.document.extensions.BaseDocumentExtension;
-import com.axemble.vdoc.sdk.exceptions.DirectoryModuleException;
-import com.axemble.vdoc.sdk.exceptions.ProjectModuleException;
-import com.axemble.vdoc.sdk.exceptions.WorkflowModuleException;
 import com.axemble.vdoc.sdk.interfaces.*;
 import com.axemble.vdoc.sdk.modules.IWorkflowModule;
-import com.moovapps.gp.budget.helpers.Const;
+import com.moovapps.gp.budget.utils.Const;
 import com.moovapps.gp.services.DataUniversService;
 import com.moovapps.gp.services.DirectoryService;
 import com.moovapps.gp.services.WorkflowsService;
-import org.apache.ecs.html.Col;
 
 import java.math.BigDecimal;
 import java.util.Collection;
 
-import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+import static com.moovapps.gp.budget.utils.calculate.castToBigDecimal;
 
 public class ValiderOrdreRecette extends BaseDocumentExtension {
     protected IContext sysAdminContext = DirectoryService.getSysAdminContext();

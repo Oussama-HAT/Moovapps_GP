@@ -1,4 +1,4 @@
-package com.moovapps.gp.budget.helpers;
+package com.moovapps.gp.budget.utils;
 
 import com.axemble.vdoc.sdk.Modules;
 import com.axemble.vdoc.sdk.document.extensions.BaseDocumentExtension;

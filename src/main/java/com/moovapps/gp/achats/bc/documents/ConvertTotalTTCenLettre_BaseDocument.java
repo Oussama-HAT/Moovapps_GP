@@ -6,7 +6,7 @@ import com.moovapps.gp.helpers.ConvertirMontantEnLettre;
 
 import java.math.BigDecimal;
 
-import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+import static com.moovapps.gp.budget.utils.calculate.castToBigDecimal;
 
 public class ConvertTotalTTCenLettre_BaseDocument extends BaseDocumentExtension {
     private static final long serialVersionUID = -1513666146210682764L;

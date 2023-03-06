@@ -3,17 +3,18 @@ package com.moovapps.gp.budget.engagement.document;
 import com.axemble.vdoc.sdk.document.extensions.BaseDocumentExtension;
 import com.axemble.vdoc.sdk.interfaces.*;
 import com.axemble.vdp.ui.framework.widgets.CtlButton;
-import com.moovapps.gp.budget.helpers.Const;
-import com.moovapps.gp.budget.helpers.calculate;
+import com.axemble.vdp.utils.CollectionUtils;
+import com.moovapps.gp.budget.utils.Const;
 import com.moovapps.gp.services.DirectoryService;
 import com.moovapps.gp.services.WorkflowsService;
 
 import java.math.BigDecimal;
 import java.util.Collection;
 
-import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+import static com.moovapps.gp.budget.utils.calculate.castToBigDecimal;
 
 public class DiminutionEngagement extends BaseDocumentExtension {
+
     protected IContext sysAdminContext = DirectoryService.getSysAdminContext();
 
     private String anneeBudgetaire = null;
@@ -76,7 +77,7 @@ public class DiminutionEngagement extends BaseDocumentExtension {
                 this.anneeBudgetaire = (String) getWorkflowInstance().getValue("AnneeBudgetaire");
                 this.natureBudget = (IStorageResource) getWorkflowInstance().getValue("NatureBudget");
                 this.RubriqueBudgetaire = (String) getWorkflowInstance().getValue("RubriqueBudgetaire");
-                Collection<ILinkedResource> annulationlinkedResources = (Collection<ILinkedResource>) getWorkflowInstance().getLinkedResources("CANCEL_Engagement");
+                Collection<ILinkedResource> annulationlinkedResources = CollectionUtils.cast(getWorkflowInstance().getLinkedResources("CANCEL_Engagement") , ILinkedResource.class);
                 this.totalmontantAnnule = getWorkflowInstance().getValue("MontantTotalAnnule") != null ? castToBigDecimal(getWorkflowInstance().getValue("MontantTotalAnnule")) : BigDecimal.ZERO;
                 this.resteAPayer = castToBigDecimal(getWorkflowInstance().getValue("ResteAPayer"));
                 this.montantEngager = castToBigDecimal(getWorkflowInstance().getValue("MontantAImputer"));
@@ -122,7 +123,6 @@ public class DiminutionEngagement extends BaseDocumentExtension {
                 }
                 getWorkflowInstance().setValue("MontantTotalAnnule", this.totalmontantAnnule.add(this.montantAnnuler));
                 getWorkflowInstance().setValue("ResteAPayer" ,this.montantEngager.subtract(this.totalmontantAnnule.add(this.montantAnnuler)).subtract(this.montantPaye));
-                       // - (this.totalmontantAnnule + this.montantAnnuler) - this.montantPaye);
                 getWorkflowInstance().save(sysAdminContext);
             }
         } catch (Exception e) {

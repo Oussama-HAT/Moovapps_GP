@@ -4,15 +4,14 @@ import com.axemble.vdoc.sdk.document.extensions.BaseDocumentExtension;
 import com.axemble.vdoc.sdk.interfaces.*;
 import com.axemble.vdp.ui.framework.widgets.CtlButton;
 import com.axemble.vdp.utils.CollectionUtils;
-import com.moovapps.gp.budget.helpers.Const;
-import com.moovapps.gp.budget.helpers.calculate;
+import com.moovapps.gp.budget.utils.Const;
 import com.moovapps.gp.services.DirectoryService;
 import com.moovapps.gp.services.WorkflowsService;
 
 import java.math.BigDecimal;
 import java.util.Collection;
 
-import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+import static com.moovapps.gp.budget.utils.calculate.castToBigDecimal;
 
 public class AnnulationRAP extends BaseDocumentExtension {
     protected IContext sysAdminContext = DirectoryService.getSysAdminContext();
@@ -21,12 +20,11 @@ public class AnnulationRAP extends BaseDocumentExtension {
 
     private String RubriqueBudgetaire = null;
 
-    private String typeBudget = "Dépenses";
+    private final String typeBudget = "Dépenses";
 
     private IStorageResource rubriqueBudget = null;
 
     private IStorageResource natureBudget = null;
-
 
     private BigDecimal rapLibere_RB = BigDecimal.ZERO;
 
@@ -55,17 +53,15 @@ public class AnnulationRAP extends BaseDocumentExtension {
         }
         return super.onAfterLoad();
     }
-
     @Override
     public boolean onBeforeSubmit(IAction action) {
-
         try {
             if (action.getName().equals("SolderDiminuer")) {
                 this.anneeBudgetaire = (String) getWorkflowInstance().getValue("AnneeBudgetaireDestination");
                 this.natureBudget = (IStorageResource) getWorkflowInstance().getValue("NatureBudget");
                 this.RubriqueBudgetaire = (String) getWorkflowInstance().getValue("RubriqueBudgetaire");
-                Collection<ILinkedResource> annulationlinkedResources = (Collection<ILinkedResource>) getWorkflowInstance().getLinkedResources("CANCEL_RAP");
                 this.totalmontantAnnule = getWorkflowInstance().getValue("MontantTotalAnnule") != null ? castToBigDecimal(getWorkflowInstance().getValue("MontantTotalAnnule")): BigDecimal.ZERO;
+                Collection<ILinkedResource> annulationlinkedResources = CollectionUtils.cast(getWorkflowInstance().getLinkedResources("CANCEL_RAP") , ILinkedResource.class);
                 BigDecimal rapN = getWorkflowInstance().getValue("ResteAPayerN1")!=null ? castToBigDecimal(getWorkflowInstance().getValue("ResteAPayerN1")): BigDecimal.ZERO;
                 Collection<ILinkedResource> rubriquesLinkedResources = getRubriqueBudgetByCurrentBudget();
                 if (rubriquesLinkedResources == null || rubriquesLinkedResources.isEmpty()) {
@@ -124,7 +120,7 @@ public class AnnulationRAP extends BaseDocumentExtension {
             viewController.addEqualsConstraint("DocumentState", "Budget ouvert");
             workflowInstances = viewController.evaluate(WorkflowsService.getWorflowContainer("Budget", "GenerationDesBudgets"));
             if (workflowInstances != null && !workflowInstances.isEmpty())
-                linkedResources = (Collection<ILinkedResource>) workflowInstances.iterator().next().getLinkedResources("RB_Budget_Tab");
+                linkedResources = CollectionUtils.cast(workflowInstances.iterator().next().getLinkedResources("RB_Budget_Tab"), ILinkedResource.class);
             return linkedResources;
         } catch (Exception e) {
             e.printStackTrace();

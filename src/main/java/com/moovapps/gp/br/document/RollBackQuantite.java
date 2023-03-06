@@ -10,7 +10,7 @@ import com.axemble.vdoc.sdk.interfaces.IWorkflowInstance;
 import java.math.BigDecimal;
 import java.util.Collection;
 
-import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+import static com.moovapps.gp.budget.utils.calculate.castToBigDecimal;
 
 public class RollBackQuantite extends BaseDocumentExtension {
     private static final long serialVersionUID = 5601744160228878765L;

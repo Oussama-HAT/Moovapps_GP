@@ -4,7 +4,7 @@ import com.axemble.vdoc.sdk.document.extensions.BaseDocumentExtension;
 import com.axemble.vdoc.sdk.interfaces.IContext;
 import com.axemble.vdoc.sdk.interfaces.IStorageResource;
 import com.axemble.vdoc.sdk.interfaces.IViewController;
-import com.moovapps.gp.budget.helpers.Const;
+import com.moovapps.gp.budget.utils.Const;
 import com.moovapps.gp.services.DirectoryService;
 import com.moovapps.gp.services.WorkflowsService;
 

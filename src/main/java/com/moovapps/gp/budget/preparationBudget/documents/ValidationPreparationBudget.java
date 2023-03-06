@@ -6,19 +6,18 @@ import com.axemble.vdoc.sdk.exceptions.DirectoryModuleException;
 import com.axemble.vdoc.sdk.exceptions.ProjectModuleException;
 import com.axemble.vdoc.sdk.exceptions.WorkflowModuleException;
 import com.axemble.vdoc.sdk.interfaces.*;
-import com.axemble.vdoc.sdk.modules.IModule;
 import com.axemble.vdoc.sdk.modules.IWorkflowModule;
-import com.moovapps.gp.budget.helpers.Const;
+import com.axemble.vdp.utils.CollectionUtils;
+import com.moovapps.gp.budget.utils.Const;
 import com.moovapps.gp.services.DataUniversService;
 import com.moovapps.gp.services.DirectoryService;
 import com.moovapps.gp.services.WorkflowsService;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
-import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+import static com.moovapps.gp.budget.utils.calculate.castToBigDecimal;
 
 public class ValidationPreparationBudget extends BaseDocumentExtension {
 
@@ -107,15 +106,9 @@ public class ValidationPreparationBudget extends BaseDocumentExtension {
             workflowInstance.setValue("TypeBudget", this.typeBudget);
             workflowInstance.setValue("NatureBudget", this.natureBudget);
             ILinkedResource linkedResourceGB = null;
-            IStorageResource previousBudget_STO = null;
             String previousyear = String.valueOf(Integer.parseInt(this.anneeBudgetaire)-1);
             for (ILinkedResource linkedResourcePB : linkedResourcesPB) {
                 linkedResourceGB = workflowInstance.createLinkedResource("RB_Budget_Tab");
-                previousBudget_STO = getBudgetPreviousYear((IStorageResource) linkedResourcePB.getValue("RubriqueBudgetaire"), previousyear);
-                if(previousBudget_STO!=null && this.typeBudget.equals("Dépenses")){
-                    linkedResourceGB.setValue("RAPN1",castToBigDecimal(previousBudget_STO.getValue("RAP")));
-                    linkedResourceGB.setValue("RAP_CURRENT",castToBigDecimal(previousBudget_STO.getValue("RAP")));
-                }
                 linkedResourceGB.setValue("AnneeBudgetaire", this.anneeBudgetaire);
                 linkedResourceGB.setValue("TypeBudget", this.typeBudget);
                 linkedResourceGB.setValue("NatureBudget", this.natureBudget);
@@ -139,8 +132,8 @@ public class ValidationPreparationBudget extends BaseDocumentExtension {
         boolean trouve = false;
         IWorkflowInstance workflowInstance = workflowInstanceGB;
         try {
-            Collection<ILinkedResource> linkedResourcesGB = (Collection<ILinkedResource>) workflowInstanceGB.getLinkedResources("RB_Budget_Tab");
-            IStorageResource rubriqueBudgetairePB = null, rubriqueBudgetaireGB = null , previousBudget_STO = null;
+            Collection<ILinkedResource> linkedResourcesGB = CollectionUtils.cast(workflowInstanceGB.getLinkedResources("RB_Budget_Tab"),ILinkedResource.class);
+            IStorageResource rubriqueBudgetairePB = null, rubriqueBudgetaireGB = null ;
             BigDecimal montantDuBudgetCE = null, creditsOuvertsCE = null;
             BigDecimal montantDuBudgetCP = null, creditsOuvertsCP = null;
             String previousyear = String.valueOf(Integer.parseInt(this.anneeBudgetaire)-1);
@@ -176,12 +169,6 @@ public class ValidationPreparationBudget extends BaseDocumentExtension {
                         linkedResourceGB.setValue("CreditsOuvertsCE", montantDuBudgetCE);
                     }
                     linkedResourceGB.setValue("CreditsOuvertsCP", montantDuBudgetCP);
-                    previousBudget_STO = getBudgetPreviousYear((IStorageResource) linkedResourcePB.getValue("RubriqueBudgetaire"), previousyear);
-                    BigDecimal rap = castToBigDecimal(previousBudget_STO.getValue("RAP"));
-                    if(previousBudget_STO!=null && this.typeBudget.equals("Dépenses")){
-                        linkedResourceGB.setValue("RAPN1",rap);
-                        linkedResourceGB.setValue("RAP_CURRENT",rap);
-                    }
                     linkedResourceGB.save(this.respBudgetContext);
                     workflowInstanceGB.addLinkedResource(linkedResourceGB);
                 }
@@ -209,23 +196,6 @@ public class ValidationPreparationBudget extends BaseDocumentExtension {
         return null;
     }
 
-    public  IStorageResource getBudgetPreviousYear(IStorageResource RubriqueBudgetaire, String PreviousYEAR) throws WorkflowModuleException, ProjectModuleException, DirectoryModuleException {
-        IWorkflowModule workflowModule = Modules.getWorkflowModule();
-        try {
-            IViewController viewController = workflowModule.getViewController(DirectoryService.getSysAdminContext(), IResource.class);
-            viewController.addEqualsConstraint("TypeBudget", this.typeBudget);
-            viewController.addEqualsConstraint("NatureBudget", this.natureBudget);
-            viewController.addEqualsConstraint("AnneeBudgetaire", PreviousYEAR);
-            viewController.addEqualsConstraint("RubriqueBudgetaire", RubriqueBudgetaire);
-            Collection<IStorageResource> storageResources = viewController.evaluate(DataUniversService.getResourceDefinition("ReferentielsBudget" , "Budget"));
-            if(storageResources!=null && !storageResources.isEmpty()){
-                return storageResources.iterator().next();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 
     private int checkBudgetExist() {
         int count = 0;

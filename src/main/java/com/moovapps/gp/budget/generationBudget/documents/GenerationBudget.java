@@ -1,17 +1,9 @@
 package com.moovapps.gp.budget.generationBudget.documents;
 
-import com.axemble.vdoc.core.helpers.LicenseHelper;
-import com.axemble.vdoc.core.helpers.PasswordHelper;
-import com.axemble.vdoc.directory.domain.Password;
-import com.axemble.vdoc.sdk.authentication.base.BaseAuthenticationExtension;
 import com.axemble.vdoc.sdk.document.extensions.BaseDocumentExtension;
-import com.axemble.vdoc.sdk.exceptions.DirectoryModuleException;
-import com.axemble.vdoc.sdk.exceptions.ProjectModuleException;
-import com.axemble.vdoc.sdk.exceptions.WorkflowModuleException;
 import com.axemble.vdoc.sdk.interfaces.*;
-import com.axemble.vdp.ui.framework.runtime.Authentication;
 import com.axemble.vdp.ui.framework.widgets.CtlButton;
-import com.moovapps.gp.budget.helpers.Const;
+import com.moovapps.gp.budget.utils.Const;
 import com.moovapps.gp.services.DirectoryService;
 import com.moovapps.gp.services.WorkflowsService;
 
@@ -20,7 +12,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
-import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+import static com.moovapps.gp.budget.utils.BudgetUtils.isDepenses;
+import static com.moovapps.gp.budget.utils.calculate.castToBigDecimal;
 
 public class GenerationBudget extends BaseDocumentExtension {
     protected IContext sysAdminContext = DirectoryService.getSysAdminContext();
@@ -88,7 +81,7 @@ public class GenerationBudget extends BaseDocumentExtension {
             this.natureBudget = (IStorageResource) getWorkflowInstance().getValue("NatureBudget");
             this.typeBudget = (String) getWorkflowInstance().getValue("TypeBudget");
             if (action.getName().equals(Const.ACTION_BUDGET_VALIDER_GB)) {
-                if(this.typeBudget.equals("Dépenses")){
+                if(isDepenses(this.typeBudget)){
                     MAJMontantDisponible();
                 }
 

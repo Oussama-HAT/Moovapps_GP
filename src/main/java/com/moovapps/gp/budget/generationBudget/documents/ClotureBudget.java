@@ -5,15 +5,15 @@ import com.axemble.vdoc.sdk.exceptions.DirectoryModuleException;
 import com.axemble.vdoc.sdk.exceptions.ProjectModuleException;
 import com.axemble.vdoc.sdk.exceptions.WorkflowModuleException;
 import com.axemble.vdoc.sdk.interfaces.*;
-import com.moovapps.gp.budget.helpers.Const;
+import com.moovapps.gp.budget.utils.Const;
 import com.moovapps.gp.services.DirectoryService;
 import com.moovapps.gp.services.WorkflowsService;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.Collection;
 
-import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+import static com.moovapps.gp.budget.utils.BudgetUtils.isDepenses;
+import static com.moovapps.gp.budget.utils.calculate.castToBigDecimal;
 
 public class ClotureBudget extends BaseDocumentExtension {
     private IContext sysAdminContext = DirectoryService.getSysAdminContext();
@@ -36,62 +36,63 @@ public class ClotureBudget extends BaseDocumentExtension {
             this.typeBudget = (String) getWorkflowInstance().getValue("TypeBudget");
             IWorkflow iWorkflow = WorkflowsService.getWorflow("Budget", "ResteAPayer_1.0");
             if (action.getName().equals(Const.ACTION_CLOTURER_BUDGET_GB)) {
-                if (this.typeBudget.equals("Dépenses")) {
+                if (isDepenses(this.typeBudget)) {
                     Collection<IWorkflowInstance> engagementsInstances = getEngagementValideWithRAP();
                     Collection<IWorkflowInstance> rapWorkflowInstances = getRAP();
                     Collection<ILinkedResource> RB_linkedResources = (Collection<ILinkedResource>) getWorkflowInstance().getLinkedResources("RB_Budget_Tab");
                     if (engagementsInstances != null && !engagementsInstances.isEmpty()) {
                         for (IWorkflowInstance engagementworkflowInstance : engagementsInstances) {
                             this.resteApayerEngagement = castToBigDecimal(engagementworkflowInstance.getValue("ResteAPayer"));
-                                Collection<IWorkflowInstance> rapInstances = (Collection<IWorkflowInstance>) engagementworkflowInstance.getLinkedWorkflowInstances("FicheRAP");
+                            Collection<IWorkflowInstance> rapInstances = (Collection<IWorkflowInstance>) engagementworkflowInstance.getLinkedWorkflowInstances("FicheRAP");
+                            ILinkedResource iLinkedResource = RB_linkedResources.stream()
+                                    .filter(obj -> ((IStorageResource)obj.getValue("RubriqueBudgetaire")).getValue("RubriqueBudgetaire").equals(engagementworkflowInstance.getValue("RubriqueBudgetaire")))
+                                    .findFirst()
+                                    .orElse(null);
+                            if (iLinkedResource == null) {
+                                getResourceController().alert(getWorkflowModule().getStaticString("LG_RB_NOT_FOUND"));
+                                return false;
+                            }
+
+                            if (rapInstances == null || rapInstances.isEmpty()) {
+                                this.montantEngager = castToBigDecimal(engagementworkflowInstance.getValue("MontantAImputer"));
+                                this.montantPaye = castToBigDecimal(engagementworkflowInstance.getValue("MontantPaye"));
+                                this.disponible = castToBigDecimal(iLinkedResource.getValue("Disponible"));
+                                IWorkflowInstance RAPInstance = getWorkflowModule().createWorkflowInstance(this.loggedOnContext, iWorkflow, "");
+                                int annee = Integer.parseInt((String) engagementworkflowInstance.getValue("AnneeBudgetaire")) + 1;
+                                RAPInstance.setValue("sys_Title", "RAP "+String.valueOf(annee)+"("+(engagementworkflowInstance.getValue("sys_Title") + ")"));
+                                RAPInstance.setValue("ReferenceEngagement", engagementworkflowInstance.getValue("sys_Reference"));
+                                RAPInstance.setValue("ReferenceBCMarche", engagementworkflowInstance.getValue("ReferenceBCMarche"));
+                                RAPInstance.setValue("Fournisseur", engagementworkflowInstance.getValue("Fournisseur"));
+                                RAPInstance.setValue("AnneeBudgetaireSource", engagementworkflowInstance.getValue("AnneeBudgetaire"));
+                                RAPInstance.setValue("AnneeBudgetaireDestination", String.valueOf(annee));
+                                RAPInstance.setValue("NatureBudget", engagementworkflowInstance.getValue("NatureBudget"));
+                                RAPInstance.setValue("DateEngagement", engagementworkflowInstance.getValue("DateEngagement"));
+                                RAPInstance.setValue("ObjetEngagement", engagementworkflowInstance.getValue("ObjetEngagement"));
+                                RAPInstance.setValue("RubriqueBudgetaire", engagementworkflowInstance.getValue("RubriqueBudgetaire"));
+                                RAPInstance.setValue("Disponible", this.disponible);
+                                RAPInstance.setValue("MontantAImputer", this.montantEngager);
+                                RAPInstance.setValue("CumulDesPaiementsN1", this.montantPaye);
+                                RAPInstance.setValue("ResteAPayerN1", this.resteApayerEngagement);
+                                RAPInstance.setValue("MontantAPayer", 0);
+                                RAPInstance.setValue("ResteAPayer", this.resteApayerEngagement);
+                                RAPInstance.save(this.loggedOnContext);
+                                engagementworkflowInstance.addLinkedWorkflowInstance("FicheRAP", RAPInstance);
+                                engagementworkflowInstance.save(this.sysAdminContext);
+                                WorkflowsService.executeAction(engagementworkflowInstance , this.loggedOnContext , "RAP" , "AUTO");
+                            }
+                        }
+                    }
+                    if(rapWorkflowInstances != null && !rapWorkflowInstances.isEmpty()){
+                        for (IWorkflowInstance iWorkflowInstance : rapWorkflowInstances) {
+                            if(((Number)iWorkflowInstance.getValue("ResteAPayer")).doubleValue() !=0){
                                 ILinkedResource iLinkedResource = RB_linkedResources.stream()
-                                        .filter(obj -> ((IStorageResource)obj.getValue("RubriqueBudgetaire")).getValue("RubriqueBudgetaire").equals(engagementworkflowInstance.getValue("RubriqueBudgetaire")))
+                                        .filter(obj -> ((IStorageResource)obj.getValue("RubriqueBudgetaire")).getValue("RubriqueBudgetaire").equals(iWorkflowInstance.getValue("RubriqueBudgetaire")))
                                         .findFirst()
                                         .orElse(null);
                                 if (iLinkedResource == null) {
                                     getResourceController().alert(getWorkflowModule().getStaticString("LG_RB_NOT_FOUND"));
                                     return false;
                                 }
-
-                                if (rapInstances == null || rapInstances.isEmpty()) {
-                                    this.montantEngager = castToBigDecimal(engagementworkflowInstance.getValue("MontantAImputer"));
-                                    this.montantPaye = castToBigDecimal(engagementworkflowInstance.getValue("MontantPaye"));
-                                    this.disponible = castToBigDecimal(iLinkedResource.getValue("Disponible"));
-                                    IWorkflowInstance RAPInstance = getWorkflowModule().createWorkflowInstance(this.loggedOnContext, iWorkflow, "");
-                                    int annee = Integer.parseInt((String) engagementworkflowInstance.getValue("AnneeBudgetaire")) + 1;
-                                    RAPInstance.setValue("ReferenceEngagement", engagementworkflowInstance.getValue("sys_Reference"));
-                                    RAPInstance.setValue("ReferenceBCMarche", engagementworkflowInstance.getValue("ReferenceBCMarche"));
-                                    RAPInstance.setValue("Fournisseur", engagementworkflowInstance.getValue("Fournisseur"));
-                                    RAPInstance.setValue("AnneeBudgetaireSource", engagementworkflowInstance.getValue("AnneeBudgetaire"));
-                                    RAPInstance.setValue("AnneeBudgetaireDestination", String.valueOf(annee));
-                                    RAPInstance.setValue("NatureBudget", engagementworkflowInstance.getValue("NatureBudget"));
-                                    RAPInstance.setValue("DateEngagement", engagementworkflowInstance.getValue("DateEngagement"));
-                                    RAPInstance.setValue("ObjetEngagement", engagementworkflowInstance.getValue("ObjetEngagement"));
-                                    RAPInstance.setValue("RubriqueBudgetaire", engagementworkflowInstance.getValue("RubriqueBudgetaire"));
-                                    RAPInstance.setValue("Disponible", this.disponible);
-                                    RAPInstance.setValue("MontantAImputer", this.montantEngager);
-                                    RAPInstance.setValue("CumulDesPaiementsN1", this.montantPaye);
-                                    RAPInstance.setValue("ResteAPayerN1", this.resteApayerEngagement);
-                                    RAPInstance.setValue("MontantAPayer", 0);
-                                    RAPInstance.setValue("ResteAPayer", this.resteApayerEngagement);
-                                    RAPInstance.save(this.loggedOnContext);
-                                    engagementworkflowInstance.addLinkedWorkflowInstance("FicheRAP", RAPInstance);
-                                    engagementworkflowInstance.save(this.sysAdminContext);
-                                    WorkflowsService.executeAction(engagementworkflowInstance , this.loggedOnContext , "RAP" , "AUTO");
-                                }
-                        }
-                    }
-                    if(rapWorkflowInstances != null && !rapWorkflowInstances.isEmpty()){
-                        for (IWorkflowInstance iWorkflowInstance : rapWorkflowInstances) {
-                            if(((Number)iWorkflowInstance.getValue("ResteAPayer")).doubleValue() !=0){
-                                    ILinkedResource iLinkedResource = RB_linkedResources.stream()
-                                            .filter(obj -> ((IStorageResource)obj.getValue("RubriqueBudgetaire")).getValue("RubriqueBudgetaire").equals(iWorkflowInstance.getValue("RubriqueBudgetaire")))
-                                            .findFirst()
-                                            .orElse(null);
-                                    if (iLinkedResource == null) {
-                                        getResourceController().alert(getWorkflowModule().getStaticString("LG_RB_NOT_FOUND"));
-                                        return false;
-                                    }
                                 this.disponible = castToBigDecimal(iLinkedResource.getValue("Disponible"));
                                 this.resteApayerRAP = castToBigDecimal(iWorkflowInstance.getValue("ResteAPayer"));
                                 this.montantEngager = castToBigDecimal(iWorkflowInstance.getValue("MontantAImputer"));
@@ -99,6 +100,7 @@ public class ClotureBudget extends BaseDocumentExtension {
                                 BigDecimal cumulePaiementN1 = castToBigDecimal(iWorkflowInstance.getValue("CumulDesPaiementsN1"));
                                 IWorkflowInstance RAPInstance = getWorkflowModule().createWorkflowInstance(this.loggedOnContext, iWorkflow, "");
                                 int annee = Integer.parseInt((String) iWorkflowInstance.getValue("AnneeBudgetaireDestination")) + 1;
+                                RAPInstance.setValue("sys_Title", "RAP "+String.valueOf(annee)+"("+(iWorkflowInstance.getValue("sys_Title") + ")"));
                                 RAPInstance.setValue("ReferenceEngagement", iWorkflowInstance.getValue("ReferenceEngagement"));
                                 RAPInstance.setValue("ReferenceBCMarche", iWorkflowInstance.getValue("ReferenceBCMarche"));
                                 RAPInstance.setValue("Fournisseur", iWorkflowInstance.getValue("Fournisseur"));
@@ -115,8 +117,6 @@ public class ClotureBudget extends BaseDocumentExtension {
                                 RAPInstance.setValue("MontantAPayer", 0);
                                 RAPInstance.setValue("ResteAPayer", this.resteApayerRAP);
                                 RAPInstance.save(this.loggedOnContext);
-                                //RAPInstance.setValue("sys_Reference" , "RAP-"+String.valueOf(annee) + "-"+getWorkflowInstance().getValue("sys_Reference_chrono"));
-                                //RAPInstance.save("sys_Reference");
                                 iWorkflowInstance.getParentInstance().addLinkedWorkflowInstance("FicheRAP", RAPInstance);
                                 iWorkflowInstance.getParentInstance().save(this.sysAdminContext);
                             }
@@ -159,7 +159,6 @@ public class ClotureBudget extends BaseDocumentExtension {
                     budget.setValue("NatureBudget", iLinkedResource.getValue("NatureBudget"));
                     budget.setValue("AnneeBudgetaire", iLinkedResource.getValue("AnneeBudgetaire"));
                     budget.setValue("RubriqueBudgetaire", iLinkedResource.getValue("RubriqueBudgetaire"));
-                    budget.setValue("ProgrammeDEmploi", iLinkedResource.getValue("ProgrammeDEmploi"));
                     budget.setValue("CreditsOuvertsCE", castToBigDecimal(iLinkedResource.getValue("CreditsOuvertsCE")));
                     budget.setValue("CreditsOuvertsCP", castToBigDecimal(iLinkedResource.getValue("CreditsOuvertsCP")));
                     budget.setValue("RAP", castToBigDecimal(iLinkedResource.getValue("RAP_CURRENT")));

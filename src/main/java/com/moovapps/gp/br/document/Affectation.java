@@ -10,7 +10,7 @@ import com.axemble.vdoc.sdk.interfaces.*;
 import java.math.BigDecimal;
 import java.util.Collection;
 
-import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+import static com.moovapps.gp.budget.utils.calculate.castToBigDecimal;
 
 public class Affectation extends BaseDocumentExtension {
 

@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Vector;
 
-import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+import static com.moovapps.gp.budget.utils.calculate.castToBigDecimal;
 
 public class DADeReferenceValideesConsultation extends BaseViewExtension {
     protected IContext sysAdminContext = DirectoryService.getSysAdminContext();

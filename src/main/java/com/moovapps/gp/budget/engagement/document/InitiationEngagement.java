@@ -4,26 +4,16 @@ import com.axemble.vdoc.sdk.document.extensions.BaseDocumentExtension;
 import com.axemble.vdoc.sdk.interfaces.*;
 import com.axemble.vdp.ui.core.document.fields.TextBoxField;
 import com.axemble.vdp.ui.framework.widgets.components.sys.forms.BigDecimalInputComponent;
-import com.axemble.vdp.ui.framework.widgets.components.sys.forms.DoubleInputComponent;
-import com.axemble.vdp.ui.framework.widgets.components.sys.forms.ResourceTableInputComponent;
-import com.moovapps.gp.budget.helpers.Const;
-import com.moovapps.gp.helpers.DateService;
+import com.axemble.vdp.utils.CollectionUtils;
+import com.moovapps.gp.budget.utils.Const;
 import com.moovapps.gp.services.DirectoryService;
 import com.moovapps.gp.services.WorkflowsService;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
-import com.axemble.vdoc.sdk.interfaces.IOptionList.IOption;
 
-import javax.script.Invocable;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-
-import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+import static com.moovapps.gp.budget.utils.calculate.castToBigDecimal;
+import static com.moovapps.gp.budget.utils.BudgetUtils.*;
 
 public class InitiationEngagement extends BaseDocumentExtension {
     private static final long serialVersionUID = 1L;
@@ -35,32 +25,24 @@ public class InitiationEngagement extends BaseDocumentExtension {
 
     public boolean onAfterLoad() {
         try {
-            Collection<ILinkedResource> linkedResources = null;
             getResourceController().setThrowEvents("MontantAImputer", true);
-            if (getWorkflowInstance().getValue("AnneeBudgetaire") == null) {
-                int todayYear = DateService.getYear(new Date());
-                getWorkflowInstance().setValue("AnneeBudgetaire", String.valueOf(todayYear));
-            }
-            if (getWorkflowInstance().getParentInstance() != null) {
-                if (getWorkflowInstance().getValue("MontantAImputer") == null && getWorkflowInstance().getParentInstance().getValue("TotalTTC") != null)
-                    getWorkflowInstance().setValue("MontantAImputer", getWorkflowInstance().getParentInstance().getValue("TotalTTC"));
-            }
+
+            InitializeFields(getWorkflowInstance());
+
             IStorageResource natureBudget = (IStorageResource) getWorkflowInstance().getValue("NatureBudget");
+
             String anneeBudgetaire = (String) getWorkflowInstance().getValue("AnneeBudgetaire");
-            linkedResources = getRubriqueBudgetByCurrentBudget(anneeBudgetaire , natureBudget);
-            if(linkedResources!=null && !linkedResources.isEmpty()){
-                ArrayList<IOption> options = new ArrayList<>();
-                for(ILinkedResource iLinkedResource : linkedResources){
-                    options.add(getWorkflowModule().createListOption((String) ((IStorageResource)iLinkedResource.getValue("RubriqueBudgetaire")).getValue("RubriqueBudgetaire"), (String) ((IStorageResource)iLinkedResource.getValue("RubriqueBudgetaire")).getValue("RubriqueBudgetaire")));
-                }
-                getWorkflowInstance().setList("RubriqueBudgetaire", options );
-            }
-            else{
-                getWorkflowInstance().setList("RubriqueBudgetaire", null );
-            }
-            if(getWorkflowInstance().getValue("RubriqueBudgetaire")!=null && getWorkflowInstance().getValue("Disponible")!=null) {
+
+            Collection<ILinkedResource> linkedResources = getRubriqueBudgetByCurrentBudget(anneeBudgetaire, natureBudget);
+
+            InitializeRubriqueBudgetaireList(linkedResources, getWorkflowInstance(), getWorkflowModule());
+
+            if (getWorkflowInstance().getValue("RubriqueBudgetaire") != null && getWorkflowInstance().getValue("Disponible") != null) {
                 this.disponible = castToBigDecimal(getWorkflowInstance().getValue("Disponible"));
-                getWorkflowInstance().setValue("Disponible",this.disponible);
+                getWorkflowInstance().setValue("Disponible", castToBigDecimal(getWorkflowInstance().getValue("Disponible")));
+                getWorkflowInstance().setValue("CreditsOuvertsCP", castToBigDecimal(getWorkflowInstance().getValue("CreditsOuvertsCP")));
+                getWorkflowInstance().setValue("CreditsOuvertsCE", castToBigDecimal(getWorkflowInstance().getValue("CreditsOuvertsCE")));
+                getWorkflowInstance().setValue("TotalDesEngagements", castToBigDecimal(getWorkflowInstance().getValue("TotalDesEngagements")));
                 TextBoxField field = ((TextBoxField) getDocument().getDefaultWidget("MontantAImputer"));
                 BigDecimalInputComponent component = (BigDecimalInputComponent) field.getInputComponent();
                 component.setNumberMax(this.disponible);
@@ -75,38 +57,35 @@ public class InitiationEngagement extends BaseDocumentExtension {
         try {
             IStorageResource natureBudget = (IStorageResource) getWorkflowInstance().getValue("NatureBudget");
             String anneeBudgetaire = (String) getWorkflowInstance().getValue("AnneeBudgetaire");
-            Collection<ILinkedResource> linkedResources = getRubriqueBudgetByCurrentBudget(anneeBudgetaire , natureBudget);
-             if(property.getName().equals("AnneeBudgetaire") || property.getName().equals("NatureBudget")){
-                getWorkflowInstance().setValue("RubriqueBudgetaire", null );
-                if(linkedResources!=null && !linkedResources.isEmpty()){
-                    ArrayList<IOption> options = new ArrayList<>();
-                    for(ILinkedResource iLinkedResource : linkedResources){
-                        options.add(getWorkflowModule().createListOption((String) ((IStorageResource)iLinkedResource.getValue("RubriqueBudgetaire")).getValue("RubriqueBudgetaire"), (String) ((IStorageResource)iLinkedResource.getValue("RubriqueBudgetaire")).getValue("RubriqueBudgetaire")));
-                    }
-                    getWorkflowInstance().setList("RubriqueBudgetaire", options );
-                }
-                else{
-                    getWorkflowInstance().setList("RubriqueBudgetaire", null );
-                }
-
-            }
-            else if(property.getName().equals("RubriqueBudgetaire")){
-                getWorkflowInstance().setValue("Disponible",null);
-                //getWorkflowInstance().setValue("RubriqueBudgetaire_text",null);
+            Collection<ILinkedResource> linkedResources = getRubriqueBudgetByCurrentBudget(anneeBudgetaire, natureBudget);
+            if (property.getName().equals("AnneeBudgetaire") || property.getName().equals("NatureBudget")) {
+                getWorkflowInstance().setValue("RubriqueBudgetaire", null);
+                InitializeRubriqueBudgetaireList(linkedResources, getWorkflowInstance(), getWorkflowModule());
+            } else if (property.getName().equals("RubriqueBudgetaire")) {
+                getWorkflowInstance().setValue("Disponible", null);
                 String rubriqueBudgetaire = (String) getWorkflowInstance().getValue("RubriqueBudgetaire");
-                if(rubriqueBudgetaire!=null){
-                    ILinkedResource iLinkedResource = linkedResources.stream()
-                                                                    .filter(obj -> ((IStorageResource)obj.getValue("RubriqueBudgetaire")).getValue("RubriqueBudgetaire").equals(rubriqueBudgetaire))
-                                                                    .findFirst()
-                                                                    .orElse(null);
-                    if(iLinkedResource!=null){
-                        this.disponible = iLinkedResource.getValue("Disponible")!=null ? castToBigDecimal(iLinkedResource.getValue("Disponible")) : castToBigDecimal(iLinkedResource.getValue("CreditsOuvertsCP"));
-                        getWorkflowInstance().setValue("Disponible",this.disponible);
-                        TextBoxField field = ((TextBoxField) getDocument().getDefaultWidget("MontantAImputer"));
-                        BigDecimalInputComponent component = (BigDecimalInputComponent) field.getInputComponent();
-                        component.setNumberMax(this.disponible);
-                    }
+                if (rubriqueBudgetaire == null) {
+                    return;
                 }
+                ILinkedResource iLinkedResource = linkedResources.stream()
+                        .filter(obj -> ((IStorageResource) obj.getValue("RubriqueBudgetaire")).getValue("RubriqueBudgetaire").equals(rubriqueBudgetaire))
+                        .findFirst()
+                        .orElse(null);
+                if (iLinkedResource == null) {
+                    getWorkflowInstance().setValue("RubriqueBudgetaireNV", null);
+                    getWorkflowInstance().save("RubriqueBudgetaireNV");
+                    return;
+                }
+                this.disponible = iLinkedResource.getValue("Disponible") != null ? castToBigDecimal(iLinkedResource.getValue("Disponible")) : castToBigDecimal(iLinkedResource.getValue("CreditsOuvertsCP"));
+                getWorkflowInstance().setValue("CreditsOuvertsCP", castToBigDecimal(iLinkedResource.getValue("CreditsOuvertsCP")));
+                getWorkflowInstance().setValue("CreditsOuvertsCE", castToBigDecimal(iLinkedResource.getValue("CreditsOuvertsCE")));
+                getWorkflowInstance().setValue("TotalDesEngagements", castToBigDecimal(iLinkedResource.getValue("TotalDesEngagements")));
+                getWorkflowInstance().setValue("Disponible", this.disponible);
+                TextBoxField field = ((TextBoxField) getDocument().getDefaultWidget("MontantAImputer"));
+                BigDecimalInputComponent component = (BigDecimalInputComponent) field.getInputComponent();
+                component.setNumberMax(this.disponible);
+                getWorkflowInstance().setValue("RubriqueBudgetaireNV", iLinkedResource.getValue("RubriqueBudgetaire"));
+                getWorkflowInstance().save("RubriqueBudgetaireNV");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -120,8 +99,8 @@ public class InitiationEngagement extends BaseDocumentExtension {
         String anneeBudgetaire = (String) getWorkflowInstance().getValue("AnneeBudgetaire");
         String RubriqueBudgetaire = (String) getWorkflowInstance().getValue("RubriqueBudgetaire");
         try {
-            if(action.getName().equals("Envoyer")){
-                if(!checkBudget(RubriqueBudgetaire , anneeBudgetaire, natureBudget)){
+            if (action.getName().equals("Envoyer")) {
+                if (!checkBudget(RubriqueBudgetaire, anneeBudgetaire, natureBudget)) {
                     return false;
                 }
             }
@@ -131,19 +110,19 @@ public class InitiationEngagement extends BaseDocumentExtension {
         return super.onBeforeSubmit(action);
     }
 
-    public boolean checkBudget(String protocolURI , String Annee , IStorageResource natureBudget){
+    public boolean checkBudget(String protocolURI, String Annee, IStorageResource natureBudget) {
         boolean ischecked = true;
         try {
             BigDecimal montantEngager = castToBigDecimal(getWorkflowInstance().getValue("MontantAImputer"));
-            Collection<ILinkedResource> linkedResources = getRubriqueBudgetByCurrentBudget(Annee , natureBudget);
-            if(linkedResources==null || linkedResources.isEmpty()){
+            Collection<ILinkedResource> linkedResources = getRubriqueBudgetByCurrentBudget(Annee, natureBudget);
+            if (linkedResources == null || linkedResources.isEmpty()) {
                 getResourceController().alert(getWorkflowModule().getStaticString("LG_BUDGET_NOT_OPENED"));
                 return false;
             }
-            for(ILinkedResource iLinkedResource : linkedResources){
-                if(((IStorageResource)iLinkedResource.getValue("RubriqueBudgetaire")).getValue("RubriqueBudgetaire").equals(protocolURI)){
+            for (ILinkedResource iLinkedResource : linkedResources) {
+                if (((IStorageResource) iLinkedResource.getValue("RubriqueBudgetaire")).getValue("RubriqueBudgetaire").equals(protocolURI)) {
                     BigDecimal Disponible = castToBigDecimal(iLinkedResource.getValue("Disponible"));
-                    if(Disponible!=null &&  montantEngager.compareTo(Disponible) > 0){
+                    if (Disponible != null && montantEngager.compareTo(Disponible) > 0) {
                         getResourceController().alert(getWorkflowModule().getStaticString("LG_DISPO_LOWER"));
                         return false;
                     }
@@ -156,7 +135,7 @@ public class InitiationEngagement extends BaseDocumentExtension {
         return ischecked;
     }
 
-    private Collection<ILinkedResource> getRubriqueBudgetByCurrentBudget(String Annee , IStorageResource natureBudget) {
+    private Collection<ILinkedResource> getRubriqueBudgetByCurrentBudget(String Annee, IStorageResource natureBudget) {
         Collection<ILinkedResource> linkedResources = null;
         try {
             IViewController viewController = getWorkflowModule().getViewController(this.sysAdminContext);
@@ -165,8 +144,8 @@ public class InitiationEngagement extends BaseDocumentExtension {
             viewController.addEqualsConstraint(Const.Properties.NatureBudget.toString(), natureBudget);
             viewController.addEqualsConstraint("DocumentState", "Budget ouvert");
             Collection<IWorkflowInstance> workflowInstances = viewController.evaluate(WorkflowsService.getWorflowContainer("Budget", "GenerationDesBudgets"));
-            if(workflowInstances != null && !workflowInstances.isEmpty())
-                linkedResources = (Collection<ILinkedResource>) workflowInstances.iterator().next().getLinkedResources("RB_Budget_Tab");
+            if (workflowInstances != null && !workflowInstances.isEmpty())
+                linkedResources = CollectionUtils.cast(workflowInstances.iterator().next().getLinkedResources("RB_Budget_Tab"),ILinkedResource.class);
             return linkedResources;
         } catch (Exception e) {
             e.printStackTrace();

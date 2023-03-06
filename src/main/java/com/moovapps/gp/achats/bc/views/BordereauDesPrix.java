@@ -19,7 +19,6 @@ import com.axemble.vdp.ui.framework.components.events.ChangeEvent;
 import com.axemble.vdp.ui.framework.components.listeners.AbstractActionListener;
 import com.axemble.vdp.ui.framework.components.listeners.ActionListener;
 import com.axemble.vdp.ui.framework.components.listeners.ChangeListener;
-import com.axemble.vdp.ui.framework.composites.base.CtlAbstractView;
 import com.axemble.vdp.ui.framework.composites.base.models.views.ViewModelItem;
 import com.axemble.vdp.ui.framework.runtime.NamedContainer;
 import com.axemble.vdp.ui.framework.widgets.CtlAutocompleteList;
@@ -39,7 +38,6 @@ import com.axemble.vdp.ui.framework.widgets.list.Option;
 import com.axemble.vdp.utils.parameters.TempUploadFile;
 import com.moovapps.gp.services.DataUniversService;
 import com.moovapps.gp.services.DirectoryService;
-import org.apache.ecs.wml.Big;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -47,7 +45,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+import static com.moovapps.gp.budget.utils.calculate.castToBigDecimal;
 
 public class BordereauDesPrix extends BaseViewExtension {
     protected IContext sysAdminContext = DirectoryService.getSysAdminContext();

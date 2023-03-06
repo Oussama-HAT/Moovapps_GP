@@ -4,14 +4,13 @@ import com.axemble.vdoc.sdk.Modules;
 import com.axemble.vdoc.sdk.document.extensions.BaseDocumentExtension;
 import com.axemble.vdoc.sdk.interfaces.*;
 import com.axemble.vdoc.sdk.modules.IWorkflowModule;
-import com.moovapps.gp.budget.helpers.calculate;
 import com.moovapps.gp.services.DataUniversService;
 import com.moovapps.gp.services.DirectoryService;
 
 import java.math.BigDecimal;
 import java.util.Collection;
 
-import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+import static com.moovapps.gp.budget.utils.calculate.castToBigDecimal;
 
 public class ValiderPaiement extends BaseDocumentExtension {
     private static final long serialVersionUID = 1L;
@@ -80,14 +79,14 @@ public class ValiderPaiement extends BaseDocumentExtension {
                                 getResourceController().alert("Le montant de paiement est supérieur a le reste a payé de l'engagement");
                                 return false;
                             }
-                                this.payementN1_RB = iLinkedResource.getValue("Paiement_N1") != null ? castToBigDecimal(iLinkedResource.getValue("Paiement_N1")) : BigDecimal.ZERO;
-                                this.resteAPayer_RB = iLinkedResource.getValue("RAP_CURRENT") != null ? castToBigDecimal(iLinkedResource.getValue("RAP_CURRENT")) : BigDecimal.ZERO;
-                                this.totalpaiement_RB = iLinkedResource.getValue("TotalDesPaiements") != null ? castToBigDecimal(iLinkedResource.getValue("TotalDesPaiements")): BigDecimal.ZERO;
-                                iLinkedResource.setValue("Paiement_N1", this.payementN1_RB.add(this.montantPaiement));
-                                iLinkedResource.setValue("TotalDesPaiements", this.totalpaiement_RB.add(this.montantPaiement));
-                                iLinkedResource.setValue("RAP_CURRENT", this.resteAPayer_RB.subtract(this.montantPaiement));
-                                iLinkedResource.save(sysAdminContext);
-                                iLinkedResource.getParentInstance().save(sysAdminContext);
+                            this.payementN1_RB = iLinkedResource.getValue("Paiement_N1") != null ? castToBigDecimal(iLinkedResource.getValue("Paiement_N1")) : BigDecimal.ZERO;
+                            this.resteAPayer_RB = iLinkedResource.getValue("RAP_CURRENT") != null ? castToBigDecimal(iLinkedResource.getValue("RAP_CURRENT")) : BigDecimal.ZERO;
+                            this.totalpaiement_RB = iLinkedResource.getValue("TotalDesPaiements") != null ? castToBigDecimal(iLinkedResource.getValue("TotalDesPaiements")): BigDecimal.ZERO;
+                            iLinkedResource.setValue("Paiement_N1", this.payementN1_RB.add(this.montantPaiement));
+                            iLinkedResource.setValue("TotalDesPaiements", this.totalpaiement_RB.add(this.montantPaiement));
+                            iLinkedResource.setValue("RAP_CURRENT", this.resteAPayer_RB.subtract(this.montantPaiement));
+                            iLinkedResource.save(sysAdminContext);
+                            iLinkedResource.getParentInstance().save(sysAdminContext);
                         }
                         this.engagementInstance.setValue("MontantPaye", this.montantPaye_Engagement.add(this.montantPaiement));
                         this.engagementInstance.setValue("ResteAPayer", this.resteAPayer_Engagement.subtract(this.montantPaiement));
@@ -110,7 +109,7 @@ public class ValiderPaiement extends BaseDocumentExtension {
                         Tresorerie.setValue("CompteTresorerie", compteRef);
                         Tresorerie.setValue("Date",getWorkflowInstance().getValue("DatePaiement"));
                         Tresorerie.setValue("Reference",getWorkflowInstance().getValue(IProperty.System.REFERENCE));
-                        Tresorerie.setValue("Tiers",getWorkflowInstance().getValue("Fournisseur"));
+                        Tresorerie.setValue("Tiers",((IStorageResource)getWorkflowInstance().getValue("Fournisseur")).getValue("sys_Title"));
                         Tresorerie.setValue("Type" , "Paiement");
                         Tresorerie.setValue("Montant",this.montantPaiement);
                         Tresorerie.save(this.sysAdminContext);
@@ -174,7 +173,7 @@ public class ValiderPaiement extends BaseDocumentExtension {
                         Tresorerie.setValue("CompteTresorerie", compteRef);
                         Tresorerie.setValue("Date",getWorkflowInstance().getValue("DatePaiement"));
                         Tresorerie.setValue("Reference",getWorkflowInstance().getValue(IProperty.System.REFERENCE));
-                        Tresorerie.setValue("Tiers",getWorkflowInstance().getValue("Fournisseur"));
+                        Tresorerie.setValue("Tiers",((IStorageResource)getWorkflowInstance().getValue("Fournisseur")).getValue("sys_Title"));
                         Tresorerie.setValue("Type" , "Paiement");
                         Tresorerie.setValue("Montant",this.montantPaiement);
                         Tresorerie.save(this.sysAdminContext);

@@ -5,16 +5,13 @@ import com.axemble.vdoc.sdk.document.extensions.BaseDocumentExtension;
 import com.axemble.vdoc.sdk.interfaces.*;
 import com.axemble.vdp.ui.core.document.fields.TextBoxField;
 import com.axemble.vdp.ui.framework.widgets.components.sys.forms.BigDecimalInputComponent;
-import com.axemble.vdp.ui.framework.widgets.components.sys.forms.DoubleInputComponent;
-import com.moovapps.gp.budget.helpers.Const;
+import com.moovapps.gp.budget.utils.Const;
 import com.moovapps.gp.services.WorkflowsService;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.ArrayList;
 import java.util.Collection;
 
-import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+import static com.moovapps.gp.budget.utils.calculate.castToBigDecimal;
 
 public class InitiationPaiement extends BaseDocumentExtension {
     private static final long serialVersionUID = 1L;
@@ -29,7 +26,6 @@ public class InitiationPaiement extends BaseDocumentExtension {
 
     private IWorkflowInstance RAPInstance = null;
 
-
     private BigDecimal resteApaye = BigDecimal.ZERO;
 
     public boolean onAfterLoad() {
@@ -37,7 +33,6 @@ public class InitiationPaiement extends BaseDocumentExtension {
             this.sysAdminContext = getWorkflowModule().getSysadminContext();
             this.EngagementInstance= (IWorkflowInstance) getWorkflowInstance().getValue("ENGAGEMENT_INSTANCE");
             this.RAPInstance= (IWorkflowInstance) getWorkflowInstance().getValue("RAP_INSTANCE");
-
             if(getWorkflowInstance().getParentInstance()!=null){
                 getResourceController().setEditable("ENGAGEMENT_INSTANCE" , false);
                 getResourceController().setEditable("MontantAPayer" , false);
@@ -80,11 +75,16 @@ public class InitiationPaiement extends BaseDocumentExtension {
                                 .findFirst()
                                 .orElse(null);
                         if (iLinkedResource != null) {
+                            getWorkflowInstance().setValue("RubriqueBudgetaireNV" , iLinkedResource.getValue("RubriqueBudgetaire"));
                             this.resteApaye = castToBigDecimal(this.EngagementInstance.getValue("ResteAPayer"));
                             TextBoxField field = ((TextBoxField) getDocument().getDefaultWidget("MontantAPayer"));
                             BigDecimalInputComponent component = (BigDecimalInputComponent) field.getInputComponent();
                             component.setNumberMax(this.resteApaye);
                         }
+                        else{
+                            getWorkflowInstance().setValue("RubriqueBudgetaireNV" , null);
+                        }
+                        getWorkflowInstance().save("RubriqueBudgetaireNV");
                     }
                 }
             }
@@ -98,11 +98,16 @@ public class InitiationPaiement extends BaseDocumentExtension {
                                 .findFirst()
                                 .orElse(null);
                         if (iLinkedResource != null) {
+                            getWorkflowInstance().setValue("RubriqueBudgetaireNV" , iLinkedResource.getValue("RubriqueBudgetaire"));
                             this.resteApaye = castToBigDecimal(this.RAPInstance.getValue("ResteAPayer"));
                             TextBoxField field = ((TextBoxField) getDocument().getDefaultWidget("MontantAPayer"));
                             BigDecimalInputComponent component = (BigDecimalInputComponent) field.getInputComponent();
                             component.setNumberMax(this.resteApaye);
                         }
+                        else{
+                            getWorkflowInstance().setValue("RubriqueBudgetaireNV" , null);
+                        }
+                        getWorkflowInstance().save("RubriqueBudgetaireNV");
                     }
                 }
             }

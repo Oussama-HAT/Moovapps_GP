@@ -5,11 +5,9 @@ import com.axemble.vdoc.sdk.interfaces.IAttachment;
 import com.axemble.vdoc.sdk.interfaces.IContext;
 import com.axemble.vdoc.sdk.interfaces.ILinkedResource;
 import com.axemble.vdoc.sdk.interfaces.IResource;
-import com.axemble.vdoc.sdk.interfaces.IResourceController;
 import com.axemble.vdoc.sdk.interfaces.IStorageResource;
 import com.axemble.vdoc.sdk.interfaces.ITaskInstance;
 import com.axemble.vdoc.sdk.interfaces.IViewController;
-import com.axemble.vdoc.sdk.interfaces.IWorkflowInstance;
 import com.axemble.vdoc.sdk.interfaces.ui.IWidget;
 import com.axemble.vdoc.sdk.modules.IWorkflowModule;
 import com.axemble.vdoc.sdk.view.extensions.BaseViewExtension;
@@ -19,7 +17,6 @@ import com.axemble.vdp.ui.framework.components.events.ActionEvent;
 import com.axemble.vdp.ui.framework.components.events.ChangeEvent;
 import com.axemble.vdp.ui.framework.components.listeners.ActionListener;
 import com.axemble.vdp.ui.framework.components.listeners.ChangeListener;
-import com.axemble.vdp.ui.framework.composites.base.CtlAbstractView;
 import com.axemble.vdp.ui.framework.composites.base.models.views.ViewModelItem;
 import com.axemble.vdp.ui.framework.runtime.NamedContainer;
 import com.axemble.vdp.ui.framework.widgets.CtlAutocompleteList;
@@ -44,7 +41,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+import static com.moovapps.gp.budget.utils.calculate.castToBigDecimal;
 
 public class Articles_Reception extends BaseViewExtension {
     private static final long serialVersionUID = 1L;

@@ -2,12 +2,10 @@ package com.moovapps.gp.budget.generationBudget.documents;
 
 import com.axemble.vdoc.sdk.Modules;
 import com.axemble.vdoc.sdk.document.extensions.BaseDocumentExtension;
-import com.axemble.vdoc.sdk.exceptions.DirectoryModuleException;
-import com.axemble.vdoc.sdk.exceptions.ProjectModuleException;
-import com.axemble.vdoc.sdk.exceptions.WorkflowModuleException;
 import com.axemble.vdoc.sdk.interfaces.*;
 import com.axemble.vdoc.sdk.modules.IWorkflowModule;
-import com.moovapps.gp.budget.helpers.Const;
+import com.axemble.vdp.utils.CollectionUtils;
+import com.moovapps.gp.budget.utils.Const;
 import com.moovapps.gp.services.DataUniversService;
 import com.moovapps.gp.services.DirectoryService;
 
@@ -24,19 +22,20 @@ public class CheckIsPreviousRB_Exist extends BaseDocumentExtension {
     @Override
     public boolean onBeforeSubmit(IAction action) {
         try {
-            if(action.getName().equals(Const.ACTION_ENVOYER_VALIDATION_GB)){
-                Collection<ILinkedResource> RB_linkedResources = (Collection<ILinkedResource>) getWorkflowInstance().getLinkedResources("RB_Budget_Tab");
+            if(action.getName().equals(Const.ACTION_ACCEPTER_GB)){
+                Collection<ILinkedResource> GB_linkedResources = CollectionUtils.cast(getWorkflowInstance().getLinkedResources("RB_Budget_Tab"), ILinkedResource.class);
                 this.anneeBudgetaire = (String) getWorkflowInstance().getValue("AnneeBudgetaire");
                 this.typeBudget = (String) getWorkflowInstance().getValue("TypeBudget");
                 this.natureBudget = (IStorageResource) getWorkflowInstance().getValue("NatureBudget");
                 String previousyear = String.valueOf(Integer.parseInt(this.anneeBudgetaire)-1);
                 Collection<IStorageResource> iStorageResources =getBudgetPreviousYear(previousyear);
-                if(RB_linkedResources!=null && !RB_linkedResources.isEmpty()){
-                    Collection<IStorageResource> iStorageResourceList = RB_linkedResources.stream().map(obj -> (IStorageResource)obj.getValue("RubriqueBudgetaire")).collect(Collectors.toList());
+                if(GB_linkedResources!=null && !GB_linkedResources.isEmpty()){
+                    Collection<IStorageResource> iStorageResourceList = GB_linkedResources.stream().map(obj -> (IStorageResource)obj.getValue("RubriqueBudgetaire")).collect(Collectors.toList());
                     IStorageResource rubriqueBudgetaire= null;
-                    for (ILinkedResource linkedResource: RB_linkedResources){
+                    for (ILinkedResource linkedResource: GB_linkedResources){
                         rubriqueBudgetaire = (IStorageResource) linkedResource.getValue("RubriqueBudgetaire");
                         if(rubriqueBudgetaire==null){
+                            getResourceController().alert(getWorkflowModule().getStaticString("LG_RBN1_NOT_FOUND"));
                             return false;
                         }
                         if(iStorageResourceList!=null && !iStorageResourceList.isEmpty() && iStorageResources !=null && !iStorageResources.isEmpty() &&

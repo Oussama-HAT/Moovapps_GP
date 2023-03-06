@@ -11,7 +11,7 @@ import com.axemble.vdp.ui.framework.composites.base.models.views.ViewModelColumn
 import com.axemble.vdp.ui.framework.composites.base.models.views.ViewModelItem;
 import com.axemble.vdp.ui.framework.widgets.CtlButton;
 import com.axemble.vdp.ui.framework.widgets.CtlText;
-import com.moovapps.gp.budget.helpers.Const;
+import com.moovapps.gp.budget.utils.Const;
 import com.moovapps.gp.services.DirectoryService;
 import com.moovapps.gp.services.WorkflowsService;
 import java.util.List;

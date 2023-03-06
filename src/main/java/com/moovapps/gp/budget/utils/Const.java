@@ -1,7 +1,12 @@
-package com.moovapps.gp.budget.helpers;
+package com.moovapps.gp.budget.utils;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Const {
 
+    public static String workflowContainerName_GenerationDesBudgets = "GenerationDesBudgets";
+    public static String catalogName = "Budget";
 
     // Préparation du budget
     public static String ACTION_ANNULER_PB = "Annuler";
@@ -34,17 +39,18 @@ public class Const {
 
     public static String ACTION_CLOTURER_BUDGET_GB = "CloturerLeBudget";
 
-
+    public static String STATUS_DEMANDE_MODIFIER_BUDGET_GB = "Demande à modifier";
+    public static String STATUS_ENCOURS_BUDGET_GB = "En cours";
+    public static String STATUS_NOUVELLE_VERSION_BUDGET_GB = "Budget ouvert (Nouvelle version en cours)";
+    public static String STATUS_REJETE_BUDGET_GB = "Budget rejeté";
+    public static String STATUS_DEMANDEMODIFIER_BUDGET_GB = "Demande à modifier";
 
 
     public static enum NatureBudget {
         Investissement,
         Fonctionnement,
         Autre;
-        private NatureBudget() {
-        }
     }
-
 
     public static enum Properties {
         AnneeBudgetaire,
@@ -52,8 +58,6 @@ public class Const {
         NatureBudget,
         PB_Budget_Tab,
         ChargementDesRubriques;
-        private Properties() {
-        }
     }
 
 }

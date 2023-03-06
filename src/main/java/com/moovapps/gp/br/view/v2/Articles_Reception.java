@@ -41,7 +41,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+import static com.moovapps.gp.budget.utils.calculate.castToBigDecimal;
 
 public class Articles_Reception extends BaseViewExtension {
     private static final long serialVersionUID = 1L;

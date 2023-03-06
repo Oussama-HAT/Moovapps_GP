@@ -7,9 +7,7 @@ import com.axemble.vdoc.sdk.interfaces.IWorkflow;
 import com.axemble.vdoc.sdk.interfaces.IWorkflowInstance;
 import com.moovapps.gp.services.WorkflowsService;
 
-import java.math.BigDecimal;
-
-import static com.moovapps.gp.budget.helpers.calculate.castToBigDecimal;
+import static com.moovapps.gp.budget.utils.calculate.castToBigDecimal;
 
 public class CreationEngagement extends BaseDocumentExtension {
     private IContext loggedOnContext = null;
