@@ -1,0 +1,5 @@
+/src/main/custom/resources/
+/target/
+*.iml
+home.properties
+/.idea/

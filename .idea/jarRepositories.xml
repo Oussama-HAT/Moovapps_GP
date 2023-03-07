@@ -26,5 +26,10 @@
       <option name="name" value="java-moovapps-private" />
       <option name="url" value="https://repository.devops.moovapps.com/repository/java-moovapps-private/" />
     </remote-repository>
+    <remote-repository>
+      <option name="id" value="java-jboss-public" />
+      <option name="name" value="java-jboss-public" />
+      <option name="url" value="https://repository.jboss.org/nexus/content/repositories/public/" />
+    </remote-repository>
   </component>
 </project>
